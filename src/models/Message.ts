@@ -2,9 +2,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IMessage extends Document {
   sender: mongoose.Types.ObjectId;
-  receiver: mongoose.Types.ObjectId;
+  recipient: mongoose.Types.ObjectId;
   content: string;
   messageType: 'text' | 'image' | 'file' | 'appointment' | 'system';
+  attachments: string[];
   isRead: boolean;
   readAt?: Date;
   attachment?: {
@@ -27,10 +28,10 @@ const MessageSchema: Schema = new Schema({
     ref: 'User',
     required: [true, 'Sender is required']
   },
-  receiver: {
+  recipient: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: [true, 'Receiver is required']
+    required: [true, 'Recipient is required']
   },
   content: {
     type: String,
@@ -43,6 +44,9 @@ const MessageSchema: Schema = new Schema({
     enum: ['text', 'image', 'file', 'appointment', 'system'],
     default: 'text'
   },
+  attachments: [{
+    type: String
+  }],
   isRead: {
     type: Boolean,
     default: false
@@ -71,8 +75,8 @@ const MessageSchema: Schema = new Schema({
 });
 
 // Indexes
-MessageSchema.index({ sender: 1, receiver: 1, createdAt: -1 });
-MessageSchema.index({ receiver: 1, isRead: 1 });
+MessageSchema.index({ sender: 1, recipient: 1, createdAt: -1 });
+MessageSchema.index({ recipient: 1, isRead: 1 });
 MessageSchema.index({ createdAt: -1 });
 
 export default mongoose.models.Message || mongoose.model<IMessage>('Message', MessageSchema);

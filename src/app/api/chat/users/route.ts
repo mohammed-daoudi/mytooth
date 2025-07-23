@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || '';
 
-    let query = {
+    let query: any = {
       _id: { $ne: userData.userId } // Exclude current user
     };
 

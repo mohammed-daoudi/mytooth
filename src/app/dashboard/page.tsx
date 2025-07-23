@@ -276,7 +276,7 @@ export default function DashboardPage() {
                 </span>
               </div>
               <Badge className={getRoleColor(user?.role || 'patient')}>
-                {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Patient'}
               </Badge>
               <Button className="dental-gradient" asChild>
                 <Link href="/booking">
@@ -391,7 +391,7 @@ export default function DashboardPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
         >
           <Tabs defaultValue={isStaff ? "admin-overview" : "overview"} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
+            <TabsList className="grid w-full grid-cols-5 lg:grid-cols-7">
               <TabsTrigger value={isStaff ? "admin-overview" : "overview"}>
                 <Activity className="h-4 w-4 mr-2" />
                 Overview
@@ -399,6 +399,10 @@ export default function DashboardPage() {
               <TabsTrigger value="appointments">
                 <Calendar className="h-4 w-4 mr-2" />
                 Appointments
+              </TabsTrigger>
+              <TabsTrigger value="messages">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                Messages
               </TabsTrigger>
               {isStaff && (
                 <>
@@ -823,6 +827,24 @@ export default function DashboardPage() {
               </Card>
             </TabsContent>
 
+            {/* Messages Tab */}
+            <TabsContent value="messages">
+              <Card className="border-0 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    Messages
+                  </CardTitle>
+                  <CardDescription>
+                    {isStaff ? 'Communicate with patients and staff members' : 'Chat with our dental team'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Chat />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Users Tab (Admin only) */}
             {isStaff && (
               <TabsContent value="users">
@@ -1003,7 +1025,7 @@ export default function DashboardPage() {
                       <h3 className="text-xl font-semibold">{user?.name}</h3>
                       <p className="text-slate-600">{user?.email}</p>
                       <Badge className={getRoleColor(user?.role || 'patient')} variant="outline">
-                        {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)}
+                        {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Patient'}
                       </Badge>
                     </div>
                   </div>

@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
       .lean();
 
     return NextResponse.json({
-      services: services.map(service => ({
+      services: services.map((service: any) => ({
         id: service._id.toString(),
         name: service.name,
         description: service.description,

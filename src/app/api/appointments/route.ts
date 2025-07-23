@@ -54,7 +54,7 @@ export async function GET(req: NextRequest) {
       .lean();
 
     return NextResponse.json({
-      appointments: appointments.map(appointment => ({
+      appointments: appointments.map((appointment: any) => ({
         id: appointment._id.toString(),
         patient: appointment.patient,
         dentist: appointment.dentist,
@@ -152,21 +152,22 @@ export async function POST(req: NextRequest) {
       .populate('service', 'name duration price category')
       .lean();
 
+    const appointment_data = populatedAppointment as any;
     return NextResponse.json({
       message: 'Appointment booked successfully',
       appointment: {
-        id: populatedAppointment!._id.toString(),
-        patient: populatedAppointment!.patient,
-        dentist: populatedAppointment!.dentist,
-        service: populatedAppointment!.service,
-        appointmentDate: populatedAppointment!.appointmentDate,
-        appointmentTime: populatedAppointment!.appointmentTime,
-        duration: populatedAppointment!.duration,
-        status: populatedAppointment!.status,
-        symptoms: populatedAppointment!.symptoms,
-        notes: populatedAppointment!.notes,
-        price: populatedAppointment!.price,
-        paymentStatus: populatedAppointment!.paymentStatus,
+        id: appointment_data._id.toString(),
+        patient: appointment_data.patient,
+        dentist: appointment_data.dentist,
+        service: appointment_data.service,
+        appointmentDate: appointment_data.appointmentDate,
+        appointmentTime: appointment_data.appointmentTime,
+        duration: appointment_data.duration,
+        status: appointment_data.status,
+        symptoms: appointment_data.symptoms,
+        notes: appointment_data.notes,
+        price: appointment_data.price,
+        paymentStatus: appointment_data.paymentStatus,
       },
     }, { status: 201 });
 
