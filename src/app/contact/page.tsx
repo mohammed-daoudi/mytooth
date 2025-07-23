@@ -38,8 +38,8 @@ const contactSchema = z.object({
   phone: z.string().min(10, 'Please enter a valid phone number').optional(),
   subject: z.string().min(5, 'Subject must be at least 5 characters'),
   message: z.string().min(10, 'Message must be at least 10 characters'),
-  preferredContact: z.enum(['email', 'phone'], {
-    required_error: 'Please select a preferred contact method',
+  preferredContact: z.enum(['email', 'phone']).refine(val => val, {
+    message: 'Please select a preferred contact method',
   }),
 });
 

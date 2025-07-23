@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/components/AuthProvider';
 import { useSocket } from '@/components/SocketProvider';
+import Chat from '@/components/Chat';
 import {
   Calendar,
   Clock,
@@ -243,7 +245,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 py-8">
+    <ProtectedRoute requiredRole={['admin', 'dentist', 'patient']} showLoader={true}>
+      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
         {/* Header */}
         <motion.div
@@ -1053,5 +1056,6 @@ export default function DashboardPage() {
         </motion.div>
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

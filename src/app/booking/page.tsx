@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
@@ -304,7 +305,8 @@ export default function BookingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 py-8">
+    <ProtectedRoute requiredRole={['patient', 'admin']} showLoader={true}>
+      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 py-8">
       <div className="container mx-auto px-4 max-w-4xl">
         {/* Header */}
         <motion.div
@@ -701,5 +703,6 @@ export default function BookingPage() {
         )}
       </div>
     </div>
+    </ProtectedRoute>
   );
 }
