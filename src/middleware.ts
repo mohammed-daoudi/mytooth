@@ -59,10 +59,7 @@ export function middleware(request: NextRequest) {
       }
 
       // For booking route, ensure user has appropriate access
-      if (pathname.startsWith('/booking') && payload.role === 'admin') {
-        // Admins should use dashboard for appointment management
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      }
+      // Note: Removed admin redirect as admins should also be able to book appointments
 
       // Add user info to request headers for downstream use
       const response = NextResponse.next();

@@ -62,11 +62,6 @@ export function Navigation() {
 
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
-  // Debug function for navigation clicks
-  const handleNavClick = (href: string, label: string) => {
-    console.log('🔗 Navigation clicked:', { href, label, isAuthenticated, user: user?.email });
-  };
-
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -93,7 +88,6 @@ export function Navigation() {
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => handleNavClick(item.href, item.label)}
               >
                 <Button
                   variant={isActive ? "default" : "ghost"}
@@ -194,7 +188,7 @@ export function Navigation() {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className="w-56" onCloseAutoFocus={(e) => e.preventDefault()}>
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">{user?.name || 'User'}</p>
@@ -209,8 +203,7 @@ export function Navigation() {
                 <DropdownMenuItem asChild>
                   <Link
                     href="/dashboard"
-                    className="w-full"
-                    onClick={() => console.log('🔗 Dashboard clicked:', { isAuthenticated, user: user?.email })}
+                    className="w-full flex items-center cursor-pointer"
                   >
                     <User className="mr-2 h-4 w-4" />
                     Dashboard
@@ -220,8 +213,7 @@ export function Navigation() {
                 <DropdownMenuItem asChild>
                   <Link
                     href="/profile"
-                    className="w-full"
-                    onClick={() => console.log('🔗 Profile clicked:', { isAuthenticated, user: user?.email })}
+                    className="w-full flex items-center cursor-pointer"
                   >
                     <Settings className="mr-2 h-4 w-4" />
                     Profile Settings
@@ -232,8 +224,7 @@ export function Navigation() {
                   <DropdownMenuItem asChild>
                     <Link
                       href="/admin"
-                      className="w-full"
-                      onClick={() => console.log('🔗 Admin Panel clicked:', { isAuthenticated, user: user?.email, role: user?.role })}
+                      className="w-full flex items-center cursor-pointer"
                     >
                       <Shield className="mr-2 h-4 w-4" />
                       Admin Panel
