@@ -177,7 +177,7 @@ export default function ContactPage() {
                 <Phone className="mr-2 h-5 w-5" />
                 Call Us Now
               </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-slate-900">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-slate-900 dark:hover:bg-gray-800 dark:hover:text-white">
                 <Calendar className="mr-2 h-5 w-5" />
                 Book Appointment
               </Button>

@@ -182,7 +182,8 @@ export async function POST(req: NextRequest) {
       .populate('service', 'name duration price category')
       .lean();
 
-    const appointment_data = populatedAppointment as PopulatedAppointment;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const appointment_data = populatedAppointment as Record<string, any>;
     return NextResponse.json({
       message: 'Appointment booked successfully',
       appointment: {

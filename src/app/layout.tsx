@@ -38,7 +38,7 @@ export default function RootLayout({
         >
           <AuthProvider>
             <SocketProvider>
-              <div className="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 flex flex-col">
+              <div className="min-h-screen bg-gradient-to-br from-slate-50 to-cyan-50 dark:from-slate-900 dark:to-slate-800 flex flex-col">
                 <Navigation />
                 <main className="flex-1">
                   {children}

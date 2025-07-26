@@ -56,7 +56,8 @@ export async function GET(req: NextRequest) {
       .lean();
 
     return NextResponse.json({
-      services: services.map((service: ServiceDocument) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      services: services.map((service: Record<string, any>) => ({
         id: service._id.toString(),
         name: service.name,
         description: service.description,

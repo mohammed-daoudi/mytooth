@@ -232,10 +232,10 @@ export default function AboutPage() {
               <div className="aspect-square bg-gradient-to-br from-cyan-100 to-blue-100 rounded-2xl flex items-center justify-center">
                 <div className="text-8xl">🦷</div>
               </div>
-              <div className="absolute -bottom-6 -right-6 bg-white rounded-xl p-6 shadow-xl">
+              <div className="absolute -bottom-6 -right-6 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-cyan-600">15+</div>
-                  <div className="text-sm text-slate-600">Years of Excellence</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-300">Years of Excellence</div>
                 </div>
               </div>
             </motion.div>
@@ -244,7 +244,7 @@ export default function AboutPage() {
       </section>
 
       {/* Values */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

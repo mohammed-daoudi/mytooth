@@ -500,7 +500,7 @@ export default function Chat() {
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-slate-200 bg-white">
+              <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <Button
@@ -573,7 +573,7 @@ export default function Chat() {
               </div>
 
               {/* Message Input */}
-              <div className="p-4 border-t border-slate-200 bg-white">
+              <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800">
                 <div className="flex items-end space-x-2">
                   <Button variant="ghost" size="sm">
                     <Paperclip className="h-4 w-4" />

@@ -266,7 +266,7 @@ export default function ServicesPage() {
               Comprehensive dental care for the whole family. From routine cleanings
               to advanced procedures, we provide exceptional care with the latest technology.
             </p>
-            <Button size="lg" variant="secondary" className="bg-white text-cyan-600 hover:bg-gray-100" asChild>
+            <Button size="lg" variant="secondary" className="bg-white dark:bg-gray-800 text-cyan-600 dark:text-cyan-400 hover:bg-gray-100 dark:hover:bg-gray-700" asChild>
               <Link href="/booking">
                 <Calendar className="mr-2 h-5 w-5" />
                 Book Appointment
