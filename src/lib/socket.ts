@@ -33,7 +33,7 @@ export const initSocket = (httpServer: NetServer): ServerIO => {
   io.use((socket, next) => {
     try {
       const token = socket.handshake.auth.token;
-      
+
       // Allow connections without tokens (for public features)
       if (!token) {
         console.log('Socket connection without token (public access)');
@@ -168,7 +168,7 @@ export const initSocket = (httpServer: NetServer): ServerIO => {
     } else {
       // Handle unauthenticated connections (for public features)
       console.log('Unauthenticated socket connection');
-      
+
       // Allow basic public features
       socket.on('public:notification', (data) => {
         // Broadcast public notifications
@@ -188,15 +188,15 @@ export const initSocket = (httpServer: NetServer): ServerIO => {
 };
 
 // Utility functions for sending notifications
-export const sendNotificationToUser = (io: ServerIO, userId: string, notification: any) => {
+export const sendNotificationToUser = (io: ServerIO, userId: string, notification: Record<string, unknown>) => {
   io.to(`user:${userId}`).emit('notification', notification);
 };
 
-export const sendNotificationToRole = (io: ServerIO, role: string, notification: any) => {
+export const sendNotificationToRole = (io: ServerIO, role: string, notification: Record<string, unknown>) => {
   io.to(`role:${role}`).emit('notification', notification);
 };
 
-export const broadcastToAll = (io: ServerIO, event: string, data: any) => {
+export const broadcastToAll = (io: ServerIO, event: string, data: Record<string, unknown>) => {
   io.emit(event, data);
 };
 

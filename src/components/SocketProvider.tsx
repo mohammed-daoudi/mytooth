@@ -18,7 +18,7 @@ interface Notification {
   id: string;
   type: string;
   message: string;
-  data?: any;
+  data?: Record<string, unknown>;
   timestamp: string;
   isRead: boolean;
 }
@@ -57,13 +57,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Handle real-time notifications
-        newSocket.on('notification', (notification: any) => {
+        newSocket.on('notification', (notification: Record<string, unknown>) => {
           const newNotification: Notification = {
             id: Math.random().toString(36).substr(2, 9),
-            type: notification.type,
-            message: notification.message,
-            data: notification.data,
-            timestamp: notification.timestamp,
+            type: notification.type as string,
+            message: notification.message as string,
+            data: notification.data as Record<string, unknown>,
+            timestamp: notification.timestamp as string,
             isRead: false,
           };
 
@@ -72,53 +72,53 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
           // Show browser notification if permission granted
           if (Notification.permission === 'granted') {
             new Notification('🦷 My Tooth', {
-              body: notification.message,
+              body: notification.message as string,
               icon: '/favicon.ico',
             });
           }
         });
 
         // Handle appointment notifications
-        newSocket.on('appointment:new', (data: any) => {
+        newSocket.on('appointment:new', (data: Record<string, unknown>) => {
           const notification: Notification = {
             id: Math.random().toString(36).substr(2, 9),
             type: 'appointment',
-            message: data.message,
-            data: data.data,
-            timestamp: data.timestamp,
+            message: data.message as string,
+            data: data.data as Record<string, unknown>,
+            timestamp: data.timestamp as string,
             isRead: false,
           };
           setNotifications(prev => [notification, ...prev]);
         });
 
-        newSocket.on('appointment:updated', (data: any) => {
+        newSocket.on('appointment:updated', (data: Record<string, unknown>) => {
           const notification: Notification = {
             id: Math.random().toString(36).substr(2, 9),
             type: 'appointment_update',
-            message: data.message,
-            data: data.data,
-            timestamp: data.timestamp,
+            message: data.message as string,
+            data: data.data as Record<string, unknown>,
+            timestamp: data.timestamp as string,
             isRead: false,
           };
           setNotifications(prev => [notification, ...prev]);
         });
 
-        newSocket.on('appointment:reminder', (data: any) => {
+        newSocket.on('appointment:reminder', (data: Record<string, unknown>) => {
           const notification: Notification = {
             id: Math.random().toString(36).substr(2, 9),
             type: 'reminder',
-            message: data.message,
-            data: data.data,
-            timestamp: data.timestamp,
+            message: data.message as string,
+            data: data.data as Record<string, unknown>,
+            timestamp: data.timestamp as string,
             isRead: false,
           };
           setNotifications(prev => [notification, ...prev]);
         });
 
         // Handle user status updates
-        newSocket.on('user:status', (data: any) => {
+        newSocket.on('user:status', (data: Record<string, unknown>) => {
           if (data.status === 'online') {
-            setOnlineUsers(prev => [...prev.filter(id => id !== data.userId), data.userId]);
+            setOnlineUsers(prev => [...prev.filter(id => id !== data.userId), data.userId as string]);
           } else {
             setOnlineUsers(prev => prev.filter(id => id !== data.userId));
           }
@@ -137,6 +137,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
         setIsConnected(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, user]);
 
   // Request notification permission

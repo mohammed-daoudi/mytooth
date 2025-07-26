@@ -32,25 +32,19 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20');
     const skip = (page - 1) * limit;
 
-    let query = {};
-
-    if (conversationWith) {
-      // Get messages between two specific users
-      query = {
-        $or: [
-          { sender: userData.userId, recipient: conversationWith },
-          { sender: conversationWith, recipient: userData.userId }
-        ]
-      };
-    } else {
-      // Get all messages for this user
-      query = {
-        $or: [
-          { sender: userData.userId },
-          { recipient: userData.userId }
-        ]
-      };
-    }
+    const query: Record<string, unknown> = conversationWith
+      ? {
+          $or: [
+            { sender: userData.userId, recipient: conversationWith },
+            { sender: conversationWith, recipient: userData.userId }
+          ]
+        }
+      : {
+          $or: [
+            { sender: userData.userId },
+            { recipient: userData.userId }
+          ]
+        };
 
     const messages = await Message.find(query)
       .populate('sender', 'name email role avatar')

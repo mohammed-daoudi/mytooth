@@ -4,6 +4,30 @@ import Service from '@/models/Service';
 import { requireAuth, hasRole, ROLES } from '@/lib/auth';
 import { serviceSchema, serviceFilterSchema } from '@/lib/validations';
 
+// Define types for service documents
+interface ServiceDocument {
+  _id: string;
+  name: string;
+  description: string;
+  category: string;
+  duration: number;
+  price: number;
+  image?: string;
+  painLevel: number;
+  requirements?: string[];
+  afterCareInstructions?: string;
+  isActive: boolean;
+}
+
+interface ServiceFilter {
+  isActive: boolean;
+  category?: string;
+  $or?: Array<{
+    name?: { $regex: string; $options: string };
+    description?: { $regex: string; $options: string };
+  }>;
+}
+
 // GET all services with optional filtering
 export async function GET(req: NextRequest) {
   try {
@@ -14,7 +38,7 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const isActive = searchParams.get('active') !== 'false'; // Default to true
 
-    let filter: any = { isActive };
+    const filter: ServiceFilter = { isActive };
 
     if (category) {
       filter.category = category;
@@ -32,7 +56,7 @@ export async function GET(req: NextRequest) {
       .lean();
 
     return NextResponse.json({
-      services: services.map((service: any) => ({
+      services: services.map((service: ServiceDocument) => ({
         id: service._id.toString(),
         name: service.name,
         description: service.description,

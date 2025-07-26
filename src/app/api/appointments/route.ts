@@ -6,6 +6,33 @@ import Service from '@/models/Service';
 import { requireAuth, hasRole, ROLES } from '@/lib/auth';
 import { appointmentSchema } from '@/lib/validations';
 
+// Define types for MongoDB documents
+interface PopulatedAppointment {
+  _id: string;
+  patient: { name: string; email: string; phone?: string };
+  dentist: { name: string; email: string };
+  service: { name: string; duration: number; price: number; category: string };
+  appointmentDate: Date;
+  appointmentTime: string;
+  duration: number;
+  status: string;
+  symptoms?: string;
+  notes?: string;
+  price: number;
+  paymentStatus: string;
+  createdAt: Date;
+}
+
+interface AppointmentFilter {
+  patient?: string;
+  dentist?: string;
+  status?: string;
+  appointmentDate?: {
+    $gte: Date;
+    $lte: Date;
+  };
+}
+
 // GET appointments with filtering
 export async function GET(req: NextRequest) {
   try {
@@ -24,7 +51,7 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
 
-    let filter: any = {};
+    const filter: AppointmentFilter = {};
 
     // Role-based filtering
     if (tokenPayload.role === ROLES.PATIENT) {
@@ -54,21 +81,24 @@ export async function GET(req: NextRequest) {
       .lean();
 
     return NextResponse.json({
-      appointments: appointments.map((appointment: any) => ({
-        id: appointment._id.toString(),
-        patient: appointment.patient,
-        dentist: appointment.dentist,
-        service: appointment.service,
-        appointmentDate: appointment.appointmentDate,
-        appointmentTime: appointment.appointmentTime,
-        duration: appointment.duration,
-        status: appointment.status,
-        symptoms: appointment.symptoms,
-        notes: appointment.notes,
-        price: appointment.price,
-        paymentStatus: appointment.paymentStatus,
-        createdAt: appointment.createdAt,
-      })),
+      appointments: appointments.map((appointment: unknown) => {
+        const doc = appointment as PopulatedAppointment;
+        return {
+          id: doc._id.toString(),
+          patient: doc.patient,
+          dentist: doc.dentist,
+          service: doc.service,
+          appointmentDate: doc.appointmentDate,
+          appointmentTime: doc.appointmentTime,
+          duration: doc.duration,
+          status: doc.status,
+          symptoms: doc.symptoms,
+          notes: doc.notes,
+          price: doc.price,
+          paymentStatus: doc.paymentStatus,
+          createdAt: doc.createdAt,
+        };
+      }),
     });
 
   } catch (error) {
@@ -152,7 +182,7 @@ export async function POST(req: NextRequest) {
       .populate('service', 'name duration price category')
       .lean();
 
-    const appointment_data = populatedAppointment as any;
+    const appointment_data = populatedAppointment as PopulatedAppointment;
     return NextResponse.json({
       message: 'Appointment booked successfully',
       appointment: {
