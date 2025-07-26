@@ -1,3 +1,4 @@
+// © 2025 Mohammed DAOUDI - My Tooth. All rights reserved.
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";

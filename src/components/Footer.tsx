@@ -226,9 +226,10 @@ export function Footer() {
       <div className="border-t border-slate-700 bg-slate-900">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-            <p className="text-sm text-slate-400">
-              © {currentYear} My Tooth Dental Clinic. All rights reserved.
-            </p>
+            <div className="text-sm text-slate-400">
+              <p>© {currentYear} Mohammed DAOUDI - My Tooth Dental Clinic. All rights reserved.</p>
+              <p className="text-xs mt-1">Proprietary software. Unauthorized use, reproduction, or distribution is prohibited.</p>
+            </div>
             <div className="flex space-x-4 text-sm">
               <Link href="/privacy" className="text-slate-400 hover:text-cyan-400 transition-colors">
                 Privacy Policy

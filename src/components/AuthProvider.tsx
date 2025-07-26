@@ -1,3 +1,4 @@
+// © 2025 Mohammed DAOUDI - My Tooth. All rights reserved.
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
@@ -7,6 +8,10 @@ interface User extends TokenPayload {
   name?: string;
   phone?: string;
   profileImage?: string;
+  address?: string;
+  dateOfBirth?: string;
+  emergencyContact?: string;
+  medicalHistory?: string[];
 }
 
 interface AuthContextType {

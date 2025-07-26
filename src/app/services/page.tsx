@@ -450,9 +450,11 @@ export default function ServicesPage() {
                           <Calendar className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
-                      <Button variant="outline" className="w-full group-hover:bg-cyan-50 group-hover:border-cyan-200">
-                        Learn More
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                      <Button variant="outline" className="w-full group-hover:bg-cyan-50 group-hover:border-cyan-200" asChild>
+                        <Link href={`/services/${service.category}`}>
+                          Learn More
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Link>
                       </Button>
                     </div>
                   </CardContent>

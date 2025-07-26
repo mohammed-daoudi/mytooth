@@ -1,3 +1,4 @@
+// © 2025 Mohammed DAOUDI - My Tooth. All rights reserved.
 "use client";
 
 import React, { useState } from 'react';
@@ -126,15 +127,7 @@ export function Navigation() {
               <Moon className="h-5 w-5 text-slate-600 dark:text-slate-300 transition-colors duration-300" />
             )}
           </button>
-          {/* Connection Status */}
-          {isAuthenticated && (
-            <div className="hidden sm:flex items-center space-x-2">
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-xs text-muted-foreground">
-                {isConnected ? 'Online' : 'Offline'}
-              </span>
-            </div>
-          )}
+
 
           {/* Notifications */}
           {isAuthenticated && (
