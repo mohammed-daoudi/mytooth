@@ -93,7 +93,18 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    background: #ffffff !important;
+    color: #000000 !important;
   }
+
+  .dark body {
+    background: #121212 !important;
+    color: #ffffff !important;
+  }
+}
+
+html, body {
+  transition: background 0.3s, color 0.3s;
 }
 
 @layer components {

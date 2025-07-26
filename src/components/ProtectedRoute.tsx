@@ -169,9 +169,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const [sessionExpired, setSessionExpired] = useState(false);
 
   useEffect(() => {
+    console.log('🛡️ ProtectedRoute - Auth state:', { 
+      isAuthenticated, 
+      isLoading, 
+      user: user?.email,
+      pathname 
+    });
+  }, [isAuthenticated, isLoading, user, pathname]);
+
+  useEffect(() => {
     // Check if user was previously authenticated but token expired
     const wasAuthenticated = localStorage.getItem('wasAuthenticated');
     if (wasAuthenticated && !isAuthenticated && !isLoading) {
+      console.log('🛡️ ProtectedRoute - Session expired detected');
       setSessionExpired(true);
       localStorage.removeItem('wasAuthenticated');
     }
@@ -179,6 +189,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   useEffect(() => {
     if (isAuthenticated) {
+      console.log('🛡️ ProtectedRoute - Setting wasAuthenticated flag');
       localStorage.setItem('wasAuthenticated', 'true');
     }
   }, [isAuthenticated]);
@@ -203,21 +214,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   const handleLogin = () => {
     const loginUrl = redirectTo || `/auth/login?redirect=${encodeURIComponent(pathname)}`;
+    console.log('🛡️ ProtectedRoute - Redirecting to login:', loginUrl);
     router.push(loginUrl);
   };
 
   // Show loading screen
   if (isLoading && showLoader) {
+    console.log('🛡️ ProtectedRoute - Showing loading screen');
     return <AuthLoadingScreen />;
   }
 
   // Show session expired screen
   if (sessionExpired) {
+    console.log('🛡️ ProtectedRoute - Showing session expired screen');
     return <SessionExpired onLogin={handleLogin} />;
   }
 
   // Check authentication
   if (!isAuthenticated) {
+    console.log('🛡️ ProtectedRoute - User not authenticated, showing unauthorized access');
     if (fallbackComponent) {
       return <>{fallbackComponent}</>;
     }
@@ -232,6 +247,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Check role authorization
   if (requiredRole && user && !hasRequiredRole(user.role, requiredRole)) {
+    console.log('🛡️ ProtectedRoute - User role insufficient:', { 
+      userRole: user.role, 
+      requiredRole 
+    });
     if (fallbackComponent) {
       return <>{fallbackComponent}</>;
     }
@@ -245,6 +264,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  console.log('🛡️ ProtectedRoute - Access granted');
   return <>{children}</>;
 };
 

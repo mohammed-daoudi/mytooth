@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,10 +17,39 @@ import { Eye, EyeOff, Mail, Lock, AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+  const { login, isAuthenticated, isLoading } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Get redirect parameter from URL
+  const redirectTo = searchParams.get('redirect') || '/dashboard';
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      console.log('🔄 User already authenticated, redirecting to:', redirectTo);
+      router.replace(redirectTo);
+    }
+  }, [isAuthenticated, isLoading, router, redirectTo]);
+
+  // Show loading if checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Checking authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render login form if already authenticated
+  if (isAuthenticated) {
+    return null;
+  }
 
   const {
     register,
@@ -31,7 +60,7 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginInput) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError(null);
 
     try {
@@ -46,8 +75,13 @@ export default function LoginPage() {
       const result = await response.json();
 
       if (response.ok) {
-        login(result.token, result.user);
-        router.push('/dashboard');
+        console.log('🔑 Login successful, setting auth state...');
+        // Wait for the login function to complete
+        await login(result.token, result.user);
+        
+        console.log('🔄 Auth state set, redirecting to:', redirectTo);
+        // Use replace instead of push to avoid back button issues
+        router.replace(redirectTo);
       } else {
         setError(result.error || 'Login failed');
       }
@@ -55,7 +89,7 @@ export default function LoginPage() {
       console.error('Login error:', error);
       setError('An unexpected error occurred. Please try again.');
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -175,9 +209,9 @@ export default function LoginPage() {
                 <Button
                   type="submit"
                   className="w-full dental-gradient"
-                  disabled={isLoading}
+                  disabled={isSubmitting}
                 >
-                  {isLoading ? (
+                  {isSubmitting ? (
                     <div className="flex items-center space-x-2">
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       <span>Signing in...</span>

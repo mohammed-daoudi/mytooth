@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from './AuthProvider';
 import { useSocket } from './SocketProvider';
+import { useTheme } from "next-themes";
 import {
   Menu,
   X,
@@ -31,7 +32,9 @@ import {
   User,
   Shield,
   Home,
-  Phone
+  Phone,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 const navItems = [
@@ -48,6 +51,7 @@ export function Navigation() {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const { notifications, isConnected } = useSocket();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { setTheme, theme } = useTheme();
 
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
@@ -99,6 +103,24 @@ export function Navigation() {
 
         {/* Right Side Actions */}
         <div className="flex items-center space-x-4">
+          {/* Theme Toggle Button */}
+          <button
+            aria-label="Toggle Dark Mode"
+            className="rounded-full p-2 smooth-transition border border-border bg-background hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary"
+            onClick={() => {
+              const nextTheme = theme === "dark" ? "light" : "dark";
+              setTheme(nextTheme);
+              if (typeof window !== "undefined") {
+                localStorage.setItem("theme", nextTheme);
+              }
+            }}
+          >
+            {theme === "dark" ? (
+              <Sun className="h-5 w-5 text-yellow-400 transition-colors duration-300" />
+            ) : (
+              <Moon className="h-5 w-5 text-gray-800 transition-colors duration-300" />
+            )}
+          </button>
           {/* Connection Status */}
           {isAuthenticated && (
             <div className="hidden sm:flex items-center space-x-2">

@@ -185,30 +185,6 @@ export default function DashboardPage() {
   // Filter appointments for regular users
   const userAppointments = isStaff ? appointments : appointments.filter(apt => apt.patient.email === user?.email);
 
-  // Redirect if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-white to-blue-50 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-center space-x-2">
-              <span className="text-3xl">🔒</span>
-              <span>Access Denied</span>
-            </CardTitle>
-            <CardDescription>
-              Please log in to access your dashboard.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button className="w-full dental-gradient" asChild>
-              <Link href="/auth/login">Sign In</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   const upcomingAppointments = userAppointments.filter(apt => isFuture(apt.appointmentDate));
   const pastAppointments = userAppointments.filter(apt => isPast(apt.appointmentDate));
   const unreadNotifications = notifications.filter(n => !n.isRead);
