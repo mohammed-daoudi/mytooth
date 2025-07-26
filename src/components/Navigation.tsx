@@ -51,7 +51,13 @@ export function Navigation() {
   const { user, isAuthenticated, logout, hasRole } = useAuth();
   const { notifications, isConnected } = useSocket();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const { setTheme, theme } = useTheme();
+
+  // Prevent hydration mismatch by only rendering after mount
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const unreadNotifications = notifications.filter(n => !n.isRead).length;
 
@@ -110,15 +116,14 @@ export function Navigation() {
             onClick={() => {
               const nextTheme = theme === "dark" ? "light" : "dark";
               setTheme(nextTheme);
-              if (typeof window !== "undefined") {
-                localStorage.setItem("theme", nextTheme);
-              }
             }}
           >
-            {theme === "dark" ? (
-              <Sun className="h-5 w-5 text-yellow-400 transition-colors duration-300" />
+            {!mounted ? (
+              <Moon className="h-5 w-5 text-slate-600 dark:text-slate-300 transition-colors duration-300" />
+            ) : theme === "dark" ? (
+              <Sun className="h-5 w-5 text-cyan-400 transition-colors duration-300" />
             ) : (
-              <Moon className="h-5 w-5 text-gray-800 transition-colors duration-300" />
+              <Moon className="h-5 w-5 text-slate-600 dark:text-slate-300 transition-colors duration-300" />
             )}
           </button>
           {/* Connection Status */}

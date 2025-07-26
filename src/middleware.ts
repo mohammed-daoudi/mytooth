@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get token from cookies or Authorization header
+  // Get token from cookies, Authorization header, or check if it should be passed through
   const token = request.cookies.get('auth-token')?.value ||
                 request.headers.get('Authorization')?.replace('Bearer ', '');
 

@@ -23,6 +23,15 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Initialize form hooks first (before any early returns)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  });
+
   // Get redirect parameter from URL
   const redirectTo = searchParams.get('redirect') || '/dashboard';
 
@@ -51,14 +60,6 @@ export default function LoginPage() {
     return null;
   }
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginInput>({
-    resolver: zodResolver(loginSchema),
-  });
-
   const onSubmit = async (data: LoginInput) => {
     setIsSubmitting(true);
     setError(null);
@@ -78,7 +79,7 @@ export default function LoginPage() {
         console.log('🔑 Login successful, setting auth state...');
         // Wait for the login function to complete
         await login(result.token, result.user);
-        
+
         console.log('🔄 Auth state set, redirecting to:', redirectTo);
         // Use replace instead of push to avoid back button issues
         router.replace(redirectTo);

@@ -106,9 +106,9 @@ const testimonials = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white dark:bg-gray-900">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-blue-50 py-20 lg:py-32">
+      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 py-20 lg:py-32">
         <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),rgba(255,255,255,0.5))]" />
 
         <div className="container mx-auto px-4 relative z-10">
@@ -125,7 +125,7 @@ export default function Home() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.2 }}
                 >
-                  <Badge variant="outline" className="text-cyan-600 border-cyan-200 bg-cyan-50">
+                  <Badge variant="outline" className="text-cyan-600 border-cyan-200 bg-cyan-50 dark:text-cyan-400 dark:border-cyan-800 dark:bg-cyan-950">
                     ✨ New Patient Special Offer
                   </Badge>
                 </motion.div>
@@ -134,7 +134,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.3 }}
-                  className="text-4xl lg:text-6xl font-bold text-slate-900 leading-tight"
+                  className="text-4xl lg:text-6xl font-bold text-slate-900 dark:text-white leading-tight"
                 >
                   Your Perfect{' '}
                   <span className="text-transparent bg-clip-text dental-gradient">
@@ -147,7 +147,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.4 }}
-                  className="text-xl text-slate-600 leading-relaxed"
+                  className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed"
                 >
                   Experience modern dental care in a comfortable, welcoming environment.
                   Our expert team uses the latest technology to give you the healthy,
@@ -212,8 +212,8 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="relative"
             >
-              <div className="relative z-10 bg-white rounded-2xl dental-shadow p-8">
-                <div className="aspect-square bg-gradient-to-br from-cyan-100 to-blue-100 rounded-xl flex items-center justify-center">
+              <div className="relative z-10 bg-white dark:bg-gray-800 rounded-2xl dental-shadow p-8">
+                <div className="aspect-square bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900 dark:to-blue-900 rounded-xl flex items-center justify-center">
                   <div className="text-8xl tooth-icon animate-pulse">🦷</div>
                 </div>
 
@@ -240,7 +240,7 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-16 bg-slate-900 text-white">
+      <section className="py-16 bg-slate-900 dark:bg-gray-950 text-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
@@ -262,7 +262,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -271,10 +271,10 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
               Why Choose My Tooth?
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               We combine cutting-edge technology with compassionate care to deliver
               exceptional dental experiences.
             </p>
@@ -298,7 +298,7 @@ export default function Home() {
                     <CardTitle className="text-xl font-semibold">{feature.title}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <CardDescription className="text-center text-slate-600">
+                    <CardDescription className="text-center text-slate-600 dark:text-slate-300">
                       {feature.description}
                     </CardDescription>
                   </CardContent>
@@ -310,7 +310,7 @@ export default function Home() {
       </section>
 
       {/* Services Preview */}
-      <section className="py-20 bg-slate-50">
+      <section className="py-20 bg-slate-50 dark:bg-gray-900">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -319,10 +319,10 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
               Our Services
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               From routine cleanings to advanced cosmetic procedures, we offer comprehensive
               dental care for the whole family.
             </p>
@@ -339,7 +339,7 @@ export default function Home() {
                 className="group"
               >
                 <Card className="overflow-hidden hover-lift border-0 shadow-lg hover:shadow-xl transition-all duration-300">
-                  <div className="aspect-video bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center relative">
+                  <div className="aspect-video bg-gradient-to-br from-cyan-100 to-blue-100 dark:from-cyan-900 dark:to-blue-900 flex items-center justify-center relative">
                     <service.icon className="h-16 w-16 text-cyan-600" />
                     {service.popular && (
                       <Badge className="absolute top-4 right-4 bg-orange-500">
@@ -384,7 +384,7 @@ export default function Home() {
       </section>
 
       {/* Testimonials */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-800">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -393,10 +393,10 @@ export default function Home() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 dark:text-white mb-4">
               What Our Patients Say
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
               Don't just take our word for it. Here's what our amazing patients have to say
               about their experience with us.
             </p>
@@ -429,7 +429,7 @@ export default function Home() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-slate-600 italic">"{testimonial.comment}"</p>
+                    <p className="text-slate-600 dark:text-slate-300 italic">"{testimonial.comment}"</p>
                   </CardContent>
                 </Card>
               </motion.div>
