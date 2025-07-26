@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useForm } from 'react-hook-form';
@@ -282,10 +283,10 @@ export default function BookingPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Button className="w-full dental-gradient" asChild>
-              <a href="/auth/login">Sign In</a>
+              <Link href="/auth/login">Sign In</Link>
             </Button>
             <Button variant="outline" className="w-full" asChild>
-              <a href="/auth/register">Create Account</a>
+              <Link href="/auth/register">Create Account</Link>
             </Button>
           </CardContent>
         </Card>
@@ -381,7 +382,7 @@ export default function BookingPage() {
             </Alert>
             <div className="space-y-4">
               <Button className="dental-gradient" asChild>
-                <a href="/dashboard">View My Appointments</a>
+                <Link href="/dashboard">View My Appointments</Link>
               </Button>
               <Button
                 variant="outline"

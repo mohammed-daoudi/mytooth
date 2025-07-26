@@ -76,7 +76,7 @@ const services = [
 const stats = [
   { number: '10,000+', label: 'Happy Patients', icon: Users },
   { number: '15+', label: 'Years Experience', icon: Award },
-  { number: '24/7', label: 'Emergency Care', icon: Clock },
+  { number: '8-6', label: 'Operating Hours', icon: Clock },
   { number: '98%', label: 'Satisfaction Rate', icon: Star }
 ];
 
@@ -201,7 +201,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center space-x-1">
                   <CheckCircle className="h-4 w-4 text-green-500" />
-                  <span>Emergency Care</span>
+                  <span>Modern Equipment</span>
                 </div>
               </motion.div>
             </motion.div>
@@ -474,7 +474,7 @@ export default function Home() {
                 asChild
               >
                 <Link href="/contact">
-                  Call (555) 123-TOOTH
+                  Contact Us
                 </Link>
               </Button>
             </div>

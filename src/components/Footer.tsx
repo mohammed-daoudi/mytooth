@@ -27,7 +27,7 @@ const footerLinks = {
     { href: '/services/orthodontics', label: 'Orthodontics' },
     { href: '/services/surgery', label: 'Oral Surgery' },
     { href: '/services/pediatric', label: 'Pediatric Dentistry' },
-    { href: '/services/emergency', label: 'Emergency Care' },
+    { href: '/services/preventive', label: 'Preventive Care' },
   ],
   company: [
     { href: '/about', label: 'About Us' },
@@ -48,10 +48,10 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { href: '#', icon: Facebook, label: 'Facebook' },
-  { href: '#', icon: Twitter, label: 'Twitter' },
-  { href: '#', icon: Instagram, label: 'Instagram' },
-  { href: '#', icon: Youtube, label: 'YouTube' },
+  { href: 'https://facebook.com/mytoothclinic', icon: Facebook, label: 'Facebook' },
+  { href: 'https://twitter.com/mytoothclinic', icon: Twitter, label: 'Twitter' },
+  { href: 'https://instagram.com/mytoothclinic', icon: Instagram, label: 'Instagram' },
+  { href: 'https://youtube.com/mytoothclinic', icon: Youtube, label: 'YouTube' },
 ];
 
 const features = [
@@ -109,7 +109,7 @@ export function Footer() {
                 <div>
                   <div>Mon-Fri: 8:00 AM - 6:00 PM</div>
                   <div>Sat: 9:00 AM - 4:00 PM</div>
-                  <div>Sun: Emergency Only</div>
+                  <div>Sun: Closed</div>
                 </div>
               </div>
             </div>
@@ -219,29 +219,7 @@ export function Footer() {
           </div>
         </motion.div>
 
-        {/* Emergency Contact */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          viewport={{ once: true }}
-          className="mt-8 p-4 bg-red-900/30 border border-red-800 rounded-lg"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h5 className="text-red-400 font-semibold">Dental Emergency?</h5>
-              <p className="text-sm text-slate-300">24/7 emergency hotline available</p>
-            </div>
-            <Button
-              variant="destructive"
-              size="sm"
-              className="bg-red-600 hover:bg-red-700"
-              asChild
-            >
-              <Link href="tel:+15551234567">Call Now</Link>
-            </Button>
-          </div>
-        </motion.div>
+
       </div>
 
       {/* Bottom Footer */}
