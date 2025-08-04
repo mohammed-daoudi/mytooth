@@ -1,0 +1,212 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Brand Colors */
+    --primary-cyan: #00bcd4;
+    --primary-dark: #263238;
+    --primary-light: #f5f5f5;
+
+    /* Background Colors */
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+
+    /* Card Colors */
+    --card: 0 0% 100%;
+    --card-foreground: 224 71.4% 4.1%;
+
+    /* Popover Colors */
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 71.4% 4.1%;
+
+    /* Primary Colors (Cyan Theme) */
+    --primary: 188 100% 41.6%;
+    --primary-foreground: 210 20% 98%;
+
+    /* Secondary Colors */
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+
+    /* Muted Colors */
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+
+    /* Accent Colors */
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+
+    /* Destructive Colors */
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 20% 98%;
+
+    /* Border and Input */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 188 100% 41.6%;
+
+    /* Chart Colors */
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
+    /* Radius */
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 188 100% 41.6%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 188 100% 41.6%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+html, body {
+  transition: background 0.3s, color 0.3s;
+}
+
+@layer components {
+  /* Custom Dental Clinic Styles */
+  .dental-gradient {
+    background: linear-gradient(135deg, #00bcd4 0%, #00acc1 100%);
+  }
+
+  .dental-shadow {
+    box-shadow: 0 10px 25px -5px rgba(0, 188, 212, 0.1), 0 10px 10px -5px rgba(0, 188, 212, 0.04);
+  }
+
+  .dental-border {
+    border: 2px solid rgba(0, 188, 212, 0.2);
+  }
+
+  .tooth-icon {
+    filter: drop-shadow(0 4px 8px rgba(0, 188, 212, 0.3));
+  }
+
+  /* Smooth Transitions */
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Hover Effects */
+  .hover-lift {
+    @apply smooth-transition;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 188, 212, 0.1), 0 10px 10px -5px rgba(0, 188, 212, 0.04);
+  }
+
+  /* Pulse Animation for Notifications */
+  .pulse-cyan {
+    animation: pulse-cyan 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes pulse-cyan {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  /* Loading Spinner */
+  .dental-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #00bcd4;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Glassmorphism Effect */
+  .glass-effect {
+    background: rgba(245, 245, 245, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Parallax Container */
+  .parallax-container {
+    height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
+    perspective: 1px;
+  }
+
+  .parallax-element {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .parallax-back {
+    transform: translateZ(-1px) scale(2);
+  }
+
+  .parallax-base {
+    transform: translateZ(0);
+  }
+
+  /* Custom Scrollbar */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #00bcd4;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #00acc1;
+  }
+}
