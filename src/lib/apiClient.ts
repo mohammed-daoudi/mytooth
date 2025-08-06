@@ -36,11 +36,12 @@ class ApiClient {
   constructor(baseUrl: string = '') {
     this.baseUrl = baseUrl;
 
-    // Start proactive token monitoring
+    // Start proactive token monitoring (client-side only)
     this.startTokenMonitoring();
   }
 
   private async getAuthToken(): Promise<string | null> {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('auth-token');
   }
 
@@ -67,8 +68,14 @@ class ApiClient {
   }
 
   private startTokenMonitoring(): void {
+    // Only start monitoring on client side
+    if (typeof window === 'undefined') return;
+
     // Check every 30 seconds for proactive refresh
     setInterval(async () => {
+      // Double check we're still on client side
+      if (typeof window === 'undefined') return;
+
       const token = await this.getAuthToken();
       if (token && !this.isRefreshing && await this.shouldRefreshToken()) {
         console.log('🔄 Proactively refreshing token before expiration...');
@@ -113,14 +120,16 @@ class ApiClient {
         const data = await response.json();
         const newToken = data.accessToken;
 
-        // Update stored token
-        localStorage.setItem('auth-token', newToken);
+        // Update stored token (client-side only)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('auth-token', newToken);
 
-        // Update cookie with secure settings
-        const expires = new Date();
-        expires.setDate(expires.getDate() + 7);
-        const isSecure = window.location.protocol === 'https:';
-        document.cookie = `auth-token=${newToken}; expires=${expires.toUTCString()}; path=/; samesite=strict${isSecure ? '; secure' : ''}`;
+          // Update cookie with secure settings
+          const expires = new Date();
+          expires.setDate(expires.getDate() + 7);
+          const isSecure = window.location.protocol === 'https:';
+          document.cookie = `auth-token=${newToken}; expires=${expires.toUTCString()}; path=/; samesite=strict${isSecure ? '; secure' : ''}`;
+        }
 
         console.log('✅ Token refreshed successfully');
         return true;
@@ -137,9 +146,11 @@ class ApiClient {
   }
 
   private handleRefreshFailure(): void {
-    // Clear invalid tokens
-    localStorage.removeItem('auth-token');
-    document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; samesite=strict';
+    // Clear invalid tokens (client-side only)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth-token');
+      document.cookie = 'auth-token=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/; samesite=strict';
+    }
 
     // Clear the request queue
     this.requestQueue.forEach(request => {
@@ -151,8 +162,8 @@ class ApiClient {
     });
     this.requestQueue = [];
 
-    // Redirect to login if not already there
-    if (!window.location.pathname.includes('/auth/login')) {
+    // Redirect to login if not already there (client-side only)
+    if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
       window.location.href = '/auth/login?expired=true';
     }
   }
@@ -351,8 +362,8 @@ class ApiClient {
   }
 }
 
-// Default instance
-export const apiClient = new ApiClient();
+// Default instance (only create on client side)
+export const apiClient = typeof window !== 'undefined' ? new ApiClient() : null as any;
 
 // Export the class for custom instances
 export { ApiClient };

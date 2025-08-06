@@ -102,9 +102,8 @@ const AppointmentSchema: Schema = new Schema({
   timestamps: true
 });
 
-// Indexes for efficient queries
+// Indexes for efficient queries (dentistId + startsAt removed - using compound index below)
 AppointmentSchema.index({ userId: 1, startsAt: 1 });
-AppointmentSchema.index({ dentistId: 1, startsAt: 1 });
 AppointmentSchema.index({ status: 1 });
 AppointmentSchema.index({ startsAt: 1 });
 

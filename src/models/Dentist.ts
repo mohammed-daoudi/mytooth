@@ -113,12 +113,10 @@ const DentistSchema: Schema = new Schema({
   timestamps: true
 });
 
-// Indexes for efficient queries
-DentistSchema.index({ userId: 1 });
+// Indexes for efficient queries (userId and licenseNumber indexes removed - using unique: true in field definitions)
 DentistSchema.index({ specialization: 1 });
 DentistSchema.index({ isActive: 1 });
 DentistSchema.index({ rating: -1 });
-DentistSchema.index({ licenseNumber: 1 }, { unique: true });
 
 // Soft delete support
 DentistSchema.index({ deletedAt: 1 });

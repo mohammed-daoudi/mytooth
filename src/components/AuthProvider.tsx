@@ -40,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Enhanced token monitoring
   const updateTokenStatus = useCallback(async () => {
+    if (typeof window === 'undefined' || !apiClient) return;
     const timeUntilExpiration = await apiClient.getTimeUntilExpiration();
     setTokenExpiresIn(timeUntilExpiration);
     setIsTokenNearExpiry(timeUntilExpiration !== null && timeUntilExpiration <= 10 * 60 * 1000); // 10 minutes
@@ -56,6 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('📝 [AUTH_PROVIDER] Found token in localStorage, verifying...');
 
           // Check if token is valid before making API call
+          if (!apiClient) {
+            setIsLoading(false);
+            return;
+          }
+
           const isValid = await apiClient.isTokenValid();
           if (!isValid) {
             console.log('❌ [AUTH_PROVIDER] Token expired in localStorage, removing...');
