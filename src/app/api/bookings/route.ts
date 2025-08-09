@@ -117,6 +117,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Validate startsAt is a valid date string
+    const parsedStart = new Date(startsAt);
+    if (Number.isNaN(parsedStart.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid start time format' },
+        { status: 400 }
+      );
+    }
+
     // Validate dentist exists
     const dentist = await Dentist.findById(dentistId);
     if (!dentist) {
@@ -139,7 +148,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse start time and calculate end time
-    const startTime = new Date(startsAt);
+    const startTime = parsedStart;
     const duration = service ? service.duration : 60; // Default 60 minutes
     const endTime = new Date(startTime.getTime() + duration * 60000);
 
