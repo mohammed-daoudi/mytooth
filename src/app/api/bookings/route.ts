@@ -12,13 +12,14 @@ export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const authPayload = await requireAuth(req);
-    if (!authPayload) {
+    const authResult = await requireAuth(req);
+    if (!authResult.success || !authResult.payload) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
+    const { payload } = authResult;
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
@@ -29,11 +30,11 @@ export async function GET(req: NextRequest) {
     // Build query based on user role
     const query: Record<string, unknown> = {};
 
-    if (authPayload.payload!.role === 'USER' || authPayload.payload!.role === 'patient') {
-      query.userId = authPayload.payload!.userId;
-    } else if (authPayload.payload!.role === 'DENTIST') {
+    if (payload.role === 'USER' || payload.role === 'patient') {
+      query.userId = payload.userId;
+    } else if (payload.role === 'DENTIST') {
       // Find dentist profile
-      const dentist = await Dentist.findOne({ userId: authPayload.payload!.userId });
+      const dentist = await Dentist.findOne({ userId: payload.userId });
       if (dentist) {
         query.dentistId = dentist._id;
       }
@@ -44,7 +45,7 @@ export async function GET(req: NextRequest) {
       query.status = status;
     }
 
-    if (dentistId && authPayload.payload!.role === 'ADMIN') {
+    if (dentistId && payload.role === 'ADMIN') {
       query.dentistId = dentistId;
     }
 
@@ -84,13 +85,14 @@ export async function POST(req: NextRequest) {
   try {
     await connectDB();
 
-    const authPayload = await requireAuth(req);
-    if (!authPayload) {
+    const authResult = await requireAuth(req);
+    if (!authResult.success || !authResult.payload) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
+    const { payload } = authResult;
 
     const body = await req.json();
     const { dentistId, serviceId, startsAt, notes } = body;
@@ -173,7 +175,7 @@ export async function POST(req: NextRequest) {
 
     // Map role to valid createdBy values
     let createdByValue: 'USER' | 'ADMIN' | 'DENTIST' = 'USER';
-    const userRole = authPayload.payload!.role;
+    const userRole = payload.role;
 
     if (userRole === 'ADMIN') {
       createdByValue = 'ADMIN';
@@ -186,7 +188,7 @@ export async function POST(req: NextRequest) {
 
     // Create booking
     const booking = new Appointment({
-      userId: authPayload.payload!.userId,
+      userId: payload.userId,
       dentistId,
       serviceId: serviceId || null,
       startsAt: startTime,
