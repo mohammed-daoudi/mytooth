@@ -5,6 +5,7 @@ import User from '@/models/User';
 import Dentist from '@/models/Dentist';
 import Service from '@/models/Service';
 import { requireAuth } from '@/lib/auth';
+import mongoose from 'mongoose';
 
 // GET /api/bookings - Get bookings for authenticated user
 export async function GET(req: NextRequest) {
@@ -98,6 +99,20 @@ export async function POST(req: NextRequest) {
     if (!dentistId || !startsAt) {
       return NextResponse.json(
         { error: 'Dentist ID and start time are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate ID formats to avoid CastError
+    if (!mongoose.Types.ObjectId.isValid(dentistId)) {
+      return NextResponse.json(
+        { error: 'Invalid dentist ID' },
+        { status: 400 }
+      );
+    }
+    if (serviceId && !mongoose.Types.ObjectId.isValid(serviceId)) {
+      return NextResponse.json(
+        { error: 'Invalid service ID' },
         { status: 400 }
       );
     }
