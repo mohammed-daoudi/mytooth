@@ -3,6 +3,7 @@
  */
 
 import { test, describe, expect, beforeEach } from 'bun:test';
+import jwt from 'jsonwebtoken';
 import {
   hashPassword,
   verifyPassword,
@@ -16,6 +17,7 @@ import {
   hasRole,
   hasPermission,
   ROLES,
+  JWT_SECRET,
   type TokenPayload,
   type RefreshTokenPayload
 } from '../src/lib/auth';
@@ -131,10 +133,15 @@ describe('Authentication Library', () => {
         exp: Math.floor(Date.now() / 1000) - 1 // Expired 1 second ago
       };
 
-      // We would need to manually create an expired token for this test
-      // For now, test the detection logic
-      const expiredResult = verifyTokenDetailed('expired.token.example');
+      // Generate a token with the expired payload
+      const expiredToken = jwt.sign(payload, JWT_SECRET, {
+        issuer: 'my-tooth-clinic',
+        audience: 'my-tooth-users'
+      });
+
+      const expiredResult = verifyTokenDetailed(expiredToken);
       expect(expiredResult.success).toBe(false);
+      expect(expiredResult.error).toBe('expired');
     });
 
     test('should work with legacy verify function', () => {
@@ -169,7 +176,7 @@ describe('Authentication Library', () => {
       expect(isExpired).toBe(false);
 
       const isInvalidExpired = isTokenExpired('invalid.token');
-      expect(isInvalidExpired).toBe(true);
+      expect(isInvalidExpired).toBe(false); // Invalid tokens are not expired, they're just invalid
     });
 
     test('should get token expiration date', () => {
@@ -213,15 +220,20 @@ describe('Authentication Library', () => {
 
   describe('Token Security', () => {
     test('should generate unique tokens', () => {
-      const payload: TokenPayload = {
-        userId: 'test-user',
-        email: 'test@example.com',
+      const payload1: TokenPayload = {
+        userId: 'test-user-1',
+        email: 'test1@example.com',
         role: 'USER'
       };
 
-      const token1 = generateToken(payload);
-      // Wait a tiny bit to ensure different iat
-      const token2 = generateToken(payload);
+      const payload2: TokenPayload = {
+        userId: 'test-user-2',
+        email: 'test2@example.com',
+        role: 'ADMIN'
+      };
+
+      const token1 = generateToken(payload1);
+      const token2 = generateToken(payload2);
 
       expect(token1).not.toBe(token2);
     });

@@ -81,7 +81,16 @@ export async function GET(req: NextRequest) {
 // POST /api/bookings - Create new booking
 export async function POST(req: NextRequest) {
   try {
-    await connectDB();
+    // Try to connect to database
+    try {
+      await connectDB();
+    } catch (dbError) {
+      console.warn('Database connection failed:', dbError);
+      return NextResponse.json(
+        { error: 'Database temporarily unavailable. Please try again later.' },
+        { status: 503 }
+      );
+    }
 
     const authPayload = await requireAuth(req);
     if (!authPayload) {
