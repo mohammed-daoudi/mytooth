@@ -1,8 +1,8 @@
 # MyTooth Feature Testing Checklist
 
 ## 1. Authentication Flow Testing
-- [ ] User Registration
-- [ ] User Login
+- [x] User Registration ✅ Successfully creates user with JWT token
+- [x] User Login ✅ Login works with correct password, rejects wrong password
 - [ ] JWT Token Generation
 - [ ] Protected Routes Access
 - [ ] Password Security
