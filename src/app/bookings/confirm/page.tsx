@@ -74,9 +74,9 @@ function BookingConfirmContent() {
 
       // Mock dentist data as fallback
       const mockDentists = [
-        { id: '1', name: 'Dr. Sarah Johnson', specialization: 'General & Cosmetic Dentistry', consultationFee: 100 },
-        { id: '2', name: 'Dr. Michael Chen', specialization: 'Orthodontics & Pediatric Care', consultationFee: 120 },
-        { id: '3', name: 'Dr. Emily Rodriguez', specialization: 'Oral Surgery & Implants', consultationFee: 150 }
+        { _id: '507f1f77bcf86cd799439011', name: 'Dr. Sarah Johnson', specialization: 'General & Cosmetic Dentistry', consultationFee: 100 },
+        { _id: '507f1f77bcf86cd799439012', name: 'Dr. Michael Chen', specialization: 'Orthodontics & Pediatric Care', consultationFee: 120 },
+        { _id: '507f1f77bcf86cd799439013', name: 'Dr. Emily Rodriguez', specialization: 'Oral Surgery & Implants', consultationFee: 150 }
       ];
 
       let dentistData = null;
@@ -93,7 +93,7 @@ function BookingConfirmContent() {
         }
       } catch (dentistError) {
         console.warn('⚠️ [CONFIRMATION] Dentist API failed, using mock data:', dentistError);
-        dentistData = mockDentists.find(d => d.id === dentistId) || mockDentists[0];
+        dentistData = mockDentists.find(d => d._id === dentistId) || mockDentists[0];
       }
 
       // Try to fetch service details if provided

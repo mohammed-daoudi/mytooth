@@ -46,43 +46,27 @@ interface Service {
   painLevel: number;
 }
 
-// Dentist interface
+// Dentist interface matching API response
 interface Dentist {
-  id: string;
+  _id: string;
   name: string;
   email: string;
+  phone?: string;
+  profileImage?: string;
   specialization: string;
-  experience: string;
+  bio?: string;
+  licenseNumber: string;
+  yearsOfExperience: number;
+  education: string[];
+  certifications: string[];
+  availabilityConfig: any;
+  consultationFee: number;
   rating: number;
+  totalReviews: number;
+  isActive: boolean;
 }
 
-// Mock dentists data (until we have real API)
-const mockDentists: Dentist[] = [
-  {
-    id: '1',
-    name: 'Dr. Sarah Johnson',
-    email: 'dr.johnson@mytooth.com',
-    specialization: 'General & Cosmetic Dentistry',
-    experience: '15 years',
-    rating: 4.9
-  },
-  {
-    id: '2',
-    name: 'Dr. Michael Chen',
-    email: 'dr.chen@mytooth.com',
-    specialization: 'Orthodontics & Oral Surgery',
-    experience: '12 years',
-    rating: 4.8
-  },
-  {
-    id: '3',
-    name: 'Dr. Emily Rodriguez',
-    email: 'dr.rodriguez@mytooth.com',
-    specialization: 'Pediatric & Family Dentistry',
-    experience: '8 years',
-    rating: 4.9
-  }
-];
+
 
 const timeSlots = [
   '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -98,10 +82,12 @@ export default function BookingPage() {
   const [selectedDentist, setSelectedDentist] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [servicesLoading, setServicesLoading] = useState(true);
+  const [dentistsLoading, setDentistsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [step, setStep] = useState(1);
   const [services, setServices] = useState<Service[]>([]);
+  const [dentists, setDentists] = useState<Dentist[]>([]);
 
   const {
     register,
@@ -179,6 +165,77 @@ export default function BookingPage() {
     fetchServices();
   }, []);
 
+  // Fetch dentists from API
+  useEffect(() => {
+    const fetchDentists = async () => {
+      try {
+        setDentistsLoading(true);
+        const response = await fetch('/api/dentists?active=true');
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch dentists');
+        }
+
+        const data = await response.json();
+        setDentists(data.dentists || []);
+      } catch (err) {
+        console.error('Error fetching dentists:', err);
+        // Use fallback mock data if API fails
+        setDentists([
+          {
+            _id: '507f1f77bcf86cd799439011',
+            name: 'Dr. Sarah Johnson',
+            email: 'dr.johnson@mytooth.com',
+            specialization: 'General & Cosmetic Dentistry',
+            yearsOfExperience: 15,
+            consultationFee: 120,
+            rating: 4.9,
+            totalReviews: 127,
+            isActive: true,
+            licenseNumber: 'DENT123456',
+            education: ['DDS - University of California'],
+            certifications: ['Cosmetic Dentistry Certificate'],
+            availabilityConfig: {}
+          },
+          {
+            _id: '507f1f77bcf86cd799439012',
+            name: 'Dr. Michael Chen',
+            email: 'dr.chen@mytooth.com',
+            specialization: 'Orthodontics & Oral Surgery',
+            yearsOfExperience: 12,
+            consultationFee: 150,
+            rating: 4.8,
+            totalReviews: 89,
+            isActive: true,
+            licenseNumber: 'DENT123457',
+            education: ['DDS - Harvard University'],
+            certifications: ['Orthodontics Residency'],
+            availabilityConfig: {}
+          },
+          {
+            _id: '507f1f77bcf86cd799439013',
+            name: 'Dr. Emily Rodriguez',
+            email: 'dr.rodriguez@mytooth.com',
+            specialization: 'Pediatric & Family Dentistry',
+            yearsOfExperience: 8,
+            consultationFee: 100,
+            rating: 4.9,
+            totalReviews: 156,
+            isActive: true,
+            licenseNumber: 'DENT123458',
+            education: ['DDS - Stanford University'],
+            certifications: ['Pediatric Dentistry Certificate'],
+            availabilityConfig: {}
+          }
+        ]);
+      } finally {
+        setDentistsLoading(false);
+      }
+    };
+
+    fetchDentists();
+  }, []);
+
   // Set form values when selections change
   useEffect(() => {
     if (selectedService) setValue('serviceId', selectedService);
@@ -197,7 +254,7 @@ export default function BookingPage() {
   }, [selectedTime, setValue]);
 
   const selectedServiceData = services.find(s => s.id === selectedService);
-  const selectedDentistData = mockDentists.find(d => d.id === selectedDentist);
+  const selectedDentistData = dentists.find(d => d._id === selectedDentist);
 
   const onSubmit = async (data: AppointmentInput) => {
     if (!isAuthenticated) {
@@ -471,15 +528,15 @@ export default function BookingPage() {
                       <div>
                         <Label className="text-lg font-semibold mb-4 block">Choose Dentist</Label>
                         <div className="grid md:grid-cols-2 gap-4">
-                          {mockDentists.map((dentist) => (
+                          {dentists.map((dentist) => (
                             <Card
-                              key={dentist.id}
+                              key={dentist._id}
                               className={`cursor-pointer transition-all hover:shadow-lg ${
-                                selectedDentist === dentist.id
+                                selectedDentist === dentist._id
                                   ? 'ring-2 ring-cyan-500 bg-cyan-50'
                                   : 'hover:shadow-md'
                               }`}
-                              onClick={() => setSelectedDentist(dentist.id)}
+                              onClick={() => setSelectedDentist(dentist._id)}
                             >
                               <CardContent className="p-4">
                                 <div className="flex items-center space-x-3 mb-2">
@@ -492,7 +549,7 @@ export default function BookingPage() {
                                   </div>
                                 </div>
                                 <div className="flex items-center justify-between text-xs text-slate-500">
-                                  <span>{dentist.experience} experience</span>
+                                  <span>{dentist.yearsOfExperience} years experience</span>
                                   <div className="flex items-center space-x-1">
                                     <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                                     <span>{dentist.rating}</span>

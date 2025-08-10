@@ -112,7 +112,17 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate dentist exists
-    const dentist = await Dentist.findById(dentistId);
+    let dentist;
+    try {
+      dentist = await Dentist.findById(dentistId);
+    } catch (error) {
+      console.error('Invalid dentist ID format:', dentistId, error);
+      return NextResponse.json(
+        { error: 'Invalid dentist ID format' },
+        { status: 400 }
+      );
+    }
+    
     if (!dentist) {
       return NextResponse.json(
         { error: 'Dentist not found' },
@@ -123,7 +133,16 @@ export async function POST(req: NextRequest) {
     // Validate service if provided
     let service = null;
     if (serviceId) {
-      service = await Service.findById(serviceId);
+      try {
+        service = await Service.findById(serviceId);
+      } catch (error) {
+        console.error('Invalid service ID format:', serviceId, error);
+        return NextResponse.json(
+          { error: 'Invalid service ID format' },
+          { status: 400 }
+        );
+      }
+      
       if (!service) {
         return NextResponse.json(
           { error: 'Service not found' },
