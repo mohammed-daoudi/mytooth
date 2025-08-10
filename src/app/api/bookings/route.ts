@@ -5,19 +5,21 @@ import User from '@/models/User';
 import Dentist from '@/models/Dentist';
 import Service from '@/models/Service';
 import { requireAuth } from '@/lib/auth';
+import mongoose from 'mongoose';
 
 // GET /api/bookings - Get bookings for authenticated user
 export async function GET(req: NextRequest) {
   try {
     await connectDB();
 
-    const authPayload = await requireAuth(req);
-    if (!authPayload) {
+    const authResult = await requireAuth(req);
+    if (!authResult.success || !authResult.payload) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
+    const { payload } = authResult;
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get('status');
@@ -28,11 +30,11 @@ export async function GET(req: NextRequest) {
     // Build query based on user role
     const query: Record<string, unknown> = {};
 
-    if (authPayload.payload!.role === 'USER' || authPayload.payload!.role === 'patient') {
-      query.userId = authPayload.payload!.userId;
-    } else if (authPayload.payload!.role === 'DENTIST') {
+    if (payload.role === 'USER' || payload.role === 'patient') {
+      query.userId = payload.userId;
+    } else if (payload.role === 'DENTIST') {
       // Find dentist profile
-      const dentist = await Dentist.findOne({ userId: authPayload.payload!.userId });
+      const dentist = await Dentist.findOne({ userId: payload.userId });
       if (dentist) {
         query.dentistId = dentist._id;
       }
@@ -43,7 +45,7 @@ export async function GET(req: NextRequest) {
       query.status = status;
     }
 
-    if (dentistId && authPayload.payload!.role === 'ADMIN') {
+    if (dentistId && payload.role === 'ADMIN') {
       query.dentistId = dentistId;
     }
 
@@ -92,13 +94,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const authPayload = await requireAuth(req);
-    if (!authPayload) {
+    const authResult = await requireAuth(req);
+    if (!authResult.success || !authResult.payload) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
+    const { payload } = authResult;
 
     const body = await req.json();
     const { dentistId, serviceId, startsAt, notes } = body;
@@ -107,6 +110,29 @@ export async function POST(req: NextRequest) {
     if (!dentistId || !startsAt) {
       return NextResponse.json(
         { error: 'Dentist ID and start time are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate ID formats to avoid CastError
+    if (!mongoose.Types.ObjectId.isValid(dentistId)) {
+      return NextResponse.json(
+        { error: 'Invalid dentist ID' },
+        { status: 400 }
+      );
+    }
+    if (serviceId && !mongoose.Types.ObjectId.isValid(serviceId)) {
+      return NextResponse.json(
+        { error: 'Invalid service ID' },
+        { status: 400 }
+      );
+    }
+
+    // Validate startsAt is a valid date string
+    const parsedStart = new Date(startsAt);
+    if (Number.isNaN(parsedStart.getTime())) {
+      return NextResponse.json(
+        { error: 'Invalid start time format' },
         { status: 400 }
       );
     }
@@ -133,7 +159,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Parse start time and calculate end time
-    const startTime = new Date(startsAt);
+    const startTime = parsedStart;
     const duration = service ? service.duration : 60; // Default 60 minutes
     const endTime = new Date(startTime.getTime() + duration * 60000);
 
@@ -158,7 +184,7 @@ export async function POST(req: NextRequest) {
 
     // Map role to valid createdBy values
     let createdByValue: 'USER' | 'ADMIN' | 'DENTIST' = 'USER';
-    const userRole = authPayload.payload!.role;
+    const userRole = payload.role;
 
     if (userRole === 'ADMIN') {
       createdByValue = 'ADMIN';
@@ -171,7 +197,7 @@ export async function POST(req: NextRequest) {
 
     // Create booking
     const booking = new Appointment({
-      userId: authPayload.payload!.userId,
+      userId: payload.userId,
       dentistId,
       serviceId: serviceId || null,
       startsAt: startTime,
