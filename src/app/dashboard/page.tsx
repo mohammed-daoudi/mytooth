@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/components/AuthProvider';
@@ -21,6 +22,7 @@ import {
 
 export default function DashboardPage() {
   const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   console.log('🏠 Dashboard page rendered:', { isAuthenticated, user: user?.email, role: user?.role });
 
@@ -47,12 +49,22 @@ export default function DashboardPage() {
                   {user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'User'}
                 </Badge>
               </div>
-              <Button className="dental-gradient" asChild>
-                <Link href="/booking">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Book Appointment
-                </Link>
-              </Button>
+                             <div className="flex gap-2">
+                                   {user?.role?.toUpperCase() === 'DENTIST' && (
+                    <Button 
+                      onClick={() => window.location.href = '/dentist/dashboard'}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Go to Dentist Dashboard
+                    </Button>
+                  )}
+                 <Button className="dental-gradient" asChild>
+                   <Link href="/booking">
+                     <Plus className="mr-2 h-4 w-4" />
+                     Book Appointment
+                   </Link>
+                 </Button>
+               </div>
             </div>
           </motion.div>
 
@@ -93,7 +105,7 @@ export default function DashboardPage() {
               </Card>
             </Link>
 
-            {user?.role === 'ADMIN' || user?.role === 'DENTIST' ? (
+                         {user?.role?.toUpperCase() === 'ADMIN' || user?.role?.toUpperCase() === 'DENTIST' ? (
               <Link href="/admin">
                 <Card className="dental-shadow hover-lift cursor-pointer">
                   <CardContent className="p-6 text-center">

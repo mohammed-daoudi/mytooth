@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -21,12 +21,34 @@ import {
   Download,
   Share2
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface BookingData {
-  _id: string;
-  userId: any;
-  dentistId: any;
-  serviceId: any;
+  id: string;
+  patient: {
+    name: string;
+    email: string;
+    phone: string;
+    profileImage?: string;
+    address?: string;
+    emergencyContact?: string;
+  };
+  dentist: {
+    name: string;
+    email: string;
+    phone: string;
+    specialization: string;
+    profileImage?: string;
+    rating?: number;
+  };
+  service: {
+    name: string;
+    duration: number;
+    price: number;
+    category: string;
+    description: string;
+  };
   startsAt: string;
   endsAt: string;
   status: string;
@@ -41,6 +63,8 @@ function BookingSuccessContent() {
   const [booking, setBooking] = useState<BookingData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const pdfRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const bookingId = searchParams.get('id');
@@ -75,9 +99,44 @@ function BookingSuccessContent() {
     }
   };
 
-  const handleDownloadConfirmation = () => {
-    // This would generate and download a PDF confirmation
-    console.log('Download confirmation PDF');
+  const handleDownloadConfirmation = async () => {
+    if (!booking || !pdfRef.current) return;
+    
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(pdfRef.current, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff'
+      });
+      
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const fileName = `booking-confirmation-${booking.id.slice(-8).toUpperCase()}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   const handleShareAppointment = () => {
@@ -125,7 +184,7 @@ function BookingSuccessContent() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="container mx-auto px-4 py-8">
+        <div ref={pdfRef} className="container mx-auto px-4 py-8">
           {/* Success Header */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -143,7 +202,7 @@ function BookingSuccessContent() {
               Your dental appointment has been successfully scheduled
             </p>
             <Badge className="mt-2 bg-green-600">
-              Booking ID: #{booking._id.slice(-8).toUpperCase()}
+              Booking ID: #{booking.id.slice(-8).toUpperCase()}
             </Badge>
           </motion.div>
 
@@ -200,25 +259,25 @@ function BookingSuccessContent() {
                     Your Dentist
                   </h4>
                   <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                    <p className="font-medium">{booking.dentistId?.userId?.name || 'Dr. Smith'}</p>
+                    <p className="font-medium">{booking.dentist.name}</p>
                     <p className="text-sm text-slate-600 dark:text-slate-400">
-                      {booking.dentistId?.specialization || 'General Dentistry'}
+                      {booking.dentist.specialization}
                     </p>
                   </div>
                 </div>
 
                 {/* Service Information */}
-                {booking.serviceId && (
+                {booking.service && (
                   <div className="space-y-2">
                     <h4 className="font-medium">Service</h4>
                     <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
-                      <p className="font-medium">{booking.serviceId.name}</p>
+                      <p className="font-medium">{booking.service.name}</p>
                       <p className="text-sm text-slate-600 dark:text-slate-400">
-                        Duration: {booking.serviceId.duration} minutes
+                        Duration: {booking.service.duration} minutes
                       </p>
-                      {booking.serviceId.price && (
+                      {booking.service.price && (
                         <p className="text-sm text-slate-600 dark:text-slate-400">
-                          Fee: ${booking.serviceId.price}
+                          Fee: ${booking.service.price}
                         </p>
                       )}
                     </div>
@@ -277,9 +336,10 @@ function BookingSuccessContent() {
                     onClick={handleDownloadConfirmation}
                     variant="outline"
                     className="flex items-center gap-2"
+                    disabled={downloading}
                   >
-                    <Download className="h-4 w-4" />
-                    Download Confirmation
+                    <Download className={`h-4 w-4 ${downloading ? 'animate-spin' : ''}`} />
+                    {downloading ? 'Generating PDF...' : 'Download Confirmation'}
                   </Button>
 
                   {typeof navigator !== 'undefined' && 'share' in navigator && (
@@ -318,6 +378,15 @@ function BookingSuccessContent() {
                 </ul>
               </CardContent>
             </Card>
+
+            {/* PDF Footer - Only visible in PDF */}
+            <div className="hidden print:block mt-8 pt-8 border-t border-gray-300">
+              <div className="text-center text-sm text-gray-600">
+                <p>Generated on: {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
+                <p>MyTooth Dental Clinic - Professional Dental Care</p>
+                <p>This is an official confirmation of your appointment booking.</p>
+              </div>
+            </div>
           </motion.div>
         </div>
       </div>

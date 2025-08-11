@@ -243,10 +243,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) return false;
 
     if (Array.isArray(role)) {
-      return role.includes(user.role);
+      return role.some(r => r.toLowerCase() === user.role?.toLowerCase());
     }
 
-    return user.role === role;
+    return user.role?.toLowerCase() === role.toLowerCase();
   };
 
   // Handle token expiration warnings

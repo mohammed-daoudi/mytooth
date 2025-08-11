@@ -55,8 +55,8 @@ export async function GET(
     }
 
     // Check permissions - users can only see their own bookings unless they're staff
-    const isPatient = decoded.userId === booking.userId.toString();
-    const isDentist = decoded.role === 'DENTIST' && decoded.userId === booking.dentistId.toString();
+    const isPatient = decoded.userId === booking.userId._id?.toString() || decoded.userId === booking.userId.toString();
+    const isDentist = decoded.role === 'DENTIST' && decoded.userId === booking.dentistId._id?.toString() || decoded.userId === booking.dentistId.toString();
     const isAdmin = decoded.role === 'ADMIN';
 
     if (!isPatient && !isDentist && !isAdmin) {
@@ -169,8 +169,8 @@ export async function PUT(
     }
 
     // Check permissions
-    const isPatient = decoded.userId === booking.userId.toString();
-    const isDentist = decoded.role === 'DENTIST' && decoded.userId === booking.dentistId.toString();
+    const isPatient = decoded.userId === booking.userId._id?.toString() || decoded.userId === booking.userId.toString();
+    const isDentist = decoded.role === 'DENTIST' && decoded.userId === booking.dentistId._id?.toString() || decoded.userId === booking.dentistId.toString();
     const isAdmin = decoded.role === 'ADMIN';
 
     if (!isPatient && !isDentist && !isAdmin) {
@@ -280,7 +280,7 @@ export async function DELETE(
     }
 
     // Check permissions - only patients can cancel their own bookings, or admins
-    const isPatient = decoded.userId === booking.userId.toString();
+    const isPatient = decoded.userId === booking.userId._id?.toString() || decoded.userId === booking.userId.toString();
     const isAdmin = decoded.role === 'ADMIN';
 
     if (!isPatient && !isAdmin) {

@@ -131,7 +131,7 @@ export default function DentistDashboard() {
       console.error('Error fetching appointments:', err);
       setError('Failed to load appointments. Using mock data for development.');
       // Mock data for development
-      setAppointments([
+      const mockAppointments = [
         {
           _id: '1',
           userId: {
@@ -153,9 +153,62 @@ export default function DentistDashboard() {
           notes: '',
           price: 100,
           paymentStatus: 'PAID'
+        },
+        {
+          _id: '2',
+          userId: {
+            _id: '2',
+            name: 'Monsef',
+            email: 'monsef@example.com',
+            phone: '+1234567891'
+          },
+          serviceId: {
+            _id: '2',
+            name: 'Root Canal',
+            duration: 120,
+            price: 800,
+            category: 'Endodontics'
+          },
+          startsAt: '2025-08-15T10:00:00.000Z',
+          status: 'PENDING',
+          symptoms: 'Severe tooth pain, sensitivity to hot and cold',
+          notes: 'Patient reports intense pain in upper right molar',
+          price: 800,
+          paymentStatus: 'PENDING'
+        },
+        {
+          _id: '3',
+          userId: {
+            _id: '3',
+            name: 'Sarah Johnson',
+            email: 'sarah@example.com',
+            phone: '+1234567892'
+          },
+          serviceId: {
+            _id: '3',
+            name: 'Dental Implant',
+            duration: 180,
+            price: 2500,
+            category: 'Surgery'
+          },
+          startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+          status: 'CONFIRMED',
+          symptoms: 'Missing tooth, wants permanent solution',
+          notes: 'Patient is a good candidate for implant',
+          price: 2500,
+          paymentStatus: 'PAID'
         }
-      ]);
-      setStats({ todayAppointments: 1, pendingCount: 0, completedToday: 0 });
+      ];
+      setAppointments(mockAppointments);
+      setStats({ 
+        todayAppointments: mockAppointments.filter(apt => {
+          const aptDate = new Date(apt.startsAt).toDateString();
+          const today = new Date().toDateString();
+          return aptDate === today;
+        }).length, 
+        pendingCount: mockAppointments.filter(apt => apt.status === 'PENDING').length, 
+        completedToday: 0 
+      });
     } finally {
       setLoading(false);
     }
@@ -182,7 +235,7 @@ export default function DentistDashboard() {
     } catch (err) {
       console.error('Error fetching patients:', err);
       // Mock data for development
-      setPatients([
+      const mockPatients = [
         {
           _id: '1',
           name: 'John Smith',
@@ -197,6 +250,36 @@ export default function DentistDashboard() {
           nextAppointment: new Date().toISOString(),
           recentAppointments: []
         },
+        {
+          _id: '2',
+          name: 'Monsef',
+          email: 'monsef@example.com',
+          phone: '+1234567891',
+          dateOfBirth: '1990-03-20',
+          address: '456 Oak Ave, City, State 12345',
+          emergencyContact: 'Ahmed Monsef - +1234567892',
+          medicalHistory: ['Asthma'],
+          totalVisits: 2,
+          lastVisit: '2024-12-01T14:00:00Z',
+          nextAppointment: '2025-08-15T10:00:00.000Z',
+          recentAppointments: []
+        },
+        {
+          _id: '3',
+          name: 'Sarah Johnson',
+          email: 'sarah@example.com',
+          phone: '+1234567892',
+          dateOfBirth: '1988-07-10',
+          address: '789 Pine St, City, State 12345',
+          emergencyContact: 'Mike Johnson - +1234567893',
+          medicalHistory: [],
+          totalVisits: 3,
+          lastVisit: '2024-11-20T09:00:00Z',
+          nextAppointment: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+          recentAppointments: []
+        }
+      ];
+      setPatients(mockPatients);
         {
           _id: '2',
           name: 'Sarah Johnson',
@@ -334,12 +417,34 @@ export default function DentistDashboard() {
                   Dr. {user?.name || 'Dentist'}
                 </Badge>
               </div>
-              <Button className="bg-green-600 hover:bg-green-700" asChild>
-                <Link href="/dentist/availability">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Manage Availability
-                </Link>
-              </Button>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="date-filter" className="text-sm font-medium text-slate-700">
+                    Filter by Date:
+                  </label>
+                  <input
+                    id="date-filter"
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedDate('2025-08-15')}
+                    className="text-xs"
+                  >
+                    Find Monsef
+                  </Button>
+                </div>
+                <Button className="bg-green-600 hover:bg-green-700" asChild>
+                  <Link href="/dentist/availability">
+                    <Calendar className="mr-2 h-4 w-4" />
+                    Manage Availability
+                  </Link>
+                </Button>
+              </div>
             </div>
           </motion.div>
 
