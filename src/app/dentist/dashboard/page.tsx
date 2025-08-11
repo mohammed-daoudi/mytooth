@@ -148,7 +148,7 @@ export default function DentistDashboard() {
             category: 'General'
           },
           startsAt: new Date().toISOString(),
-          status: 'CONFIRMED',
+          status: 'CONFIRMED' as const,
           symptoms: 'Regular checkup',
           notes: '',
           price: 100,
@@ -170,7 +170,7 @@ export default function DentistDashboard() {
             category: 'Endodontics'
           },
           startsAt: '2025-08-15T10:00:00.000Z',
-          status: 'PENDING',
+          status: 'PENDING' as const,
           symptoms: 'Severe tooth pain, sensitivity to hot and cold',
           notes: 'Patient reports intense pain in upper right molar',
           price: 800,
@@ -192,7 +192,7 @@ export default function DentistDashboard() {
             category: 'Surgery'
           },
           startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-          status: 'CONFIRMED',
+          status: 'CONFIRMED' as const,
           symptoms: 'Missing tooth, wants permanent solution',
           notes: 'Patient is a good candidate for implant',
           price: 2500,
@@ -200,14 +200,14 @@ export default function DentistDashboard() {
         }
       ];
       setAppointments(mockAppointments);
-      setStats({ 
+      setStats({
         todayAppointments: mockAppointments.filter(apt => {
           const aptDate = new Date(apt.startsAt).toDateString();
           const today = new Date().toDateString();
           return aptDate === today;
-        }).length, 
-        pendingCount: mockAppointments.filter(apt => apt.status === 'PENDING').length, 
-        completedToday: 0 
+        }).length,
+        pendingCount: mockAppointments.filter(apt => apt.status === 'PENDING').length,
+        completedToday: 0
       });
     } finally {
       setLoading(false);
@@ -280,20 +280,6 @@ export default function DentistDashboard() {
         }
       ];
       setPatients(mockPatients);
-        {
-          _id: '2',
-          name: 'Sarah Johnson',
-          email: 'sarah@example.com',
-          phone: '+1234567892',
-          dateOfBirth: '1990-08-22',
-          address: '456 Oak Ave, City, State 12345',
-          emergencyContact: 'Mike Johnson - +1234567893',
-          medicalHistory: ['None'],
-          totalVisits: 3,
-          lastVisit: '2024-01-10T14:30:00Z',
-          recentAppointments: []
-        }
-      ]);
     } finally {
       setPatientsLoading(false);
     }

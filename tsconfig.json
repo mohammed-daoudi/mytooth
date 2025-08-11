@@ -24,11 +24,20 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
     ".next/types/**/*.ts",
     "next-env.d.ts",
-    "build/types/**/*.ts"
-, "test-booking-fix.js"  ],
-  "exclude": ["node_modules"]
+    "types.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "tests/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "test-*.js",
+    "**/test-*",
+    "jest.config.js",
+    "jest.setup.js"
+  ]
 }
