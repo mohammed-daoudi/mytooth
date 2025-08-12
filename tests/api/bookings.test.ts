@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach, beforeEach } from 'bun:test';
+import { test, describe, expect, beforeAll, afterEach, beforeEach } from 'bun:test';
 import mongoose from 'mongoose';
 import { createMocks } from 'node-mocks-http';
 import { NextRequest } from 'next/server';
@@ -7,15 +7,42 @@ import Appointment from '@/models/Appointment';
 import User from '@/models/User';
 import Dentist from '@/models/Dentist';
 import Service from '@/models/Service';
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
+import * as authModule from '@/lib/auth';
 
 // Mock the auth middleware
-jest.mock('@/lib/auth', () => ({
-  requireAuth: jest.fn(),
-}));
+const mockRequireAuth = {
+  requireAuth: () => ({
+    user: { _id: 'test-user-id' },
+    token: 'test-token'
+  })
+};
 
-// Mock the JWT secret
+// Mock the modules
+const mockJwt = {
+  verify: () => ({ userId: 'test-user-id' }),
+  sign: () => 'test-token'
+};
+
+// Set up mocks before importing the modules that use them
 process.env.JWT_SECRET = 'test-secret';
+
+// Mock the auth module
+Object.defineProperty(authModule, 'requireAuth', {
+  value: mockRequireAuth.requireAuth,
+  writable: true
+});
+
+// Mock the JWT module
+Object.defineProperty(jwt, 'verify', {
+  value: mockJwt.verify,
+  writable: true
+});
+
+Object.defineProperty(jwt, 'sign', {
+  value: mockJwt.sign,
+  writable: true
+});
 
 // Ensure we're using the test database
 beforeAll(async () => {

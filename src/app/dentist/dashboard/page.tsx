@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/components/AuthProvider';
@@ -10,30 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { format } from 'date-fns';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useSocket } from '@/hooks/useSocket';
 import Link from 'next/link';
-import {
-  Calendar,
-  Users,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  MessageSquare,
-  FileText,
-  Activity,
-  Plus,
-  Edit,
-  Save,
-  Phone,
-  Mail,
-  DollarSign,
-  Eye,
-  Heart,
-  MapPin,
-  User
-} from 'lucide-react';
+import { Calendar, Users, Clock, CheckCircle, AlertTriangle, MessageSquare, FileText, Activity, Plus, Edit, Save, Phone, Mail, DollarSign, Eye, Heart, MapPin, User } from 'lucide-react';
 
 interface Appointment {
   _id: string;
@@ -79,150 +63,165 @@ interface DentistStats {
   completedToday: number;
 }
 
+interface PatientAppointment extends Appointment {
+  serviceName: string;
+  serviceCategory: string;
+  serviceDuration: number;
+  servicePrice: number;
+  formattedDate: string;
+  formattedTime: string;
+}
+
 export default function DentistDashboard() {
-  const { user, hasRole } = useAuth();
+  const router = useRouter();
+  const { user, isLoading: authLoading } = useAuth();
   const { subscribeToAppointmentUpdates, subscribeToPatientUpdates, unsubscribe } = useSocket();
+  
+  // Appointments state
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointmentNotes, setAppointmentNotes] = useState<Record<string, string>>({});
+  const [editingAppointment, setEditingAppointment] = useState<string | null>(null);
+  
+  // Patient state
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [patientAppointments, setPatientAppointments] = useState<PatientAppointment[]>([]);
+  
+  // UI state
+  const [loading, setLoading] = useState(true);
+  const [patientsLoading, setPatientsLoading] = useState(false);
+  const [isAppointmentsLoading, setIsAppointmentsLoading] = useState(false);
+  
+  // Messages and status
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  
+  // Filters and stats
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [stats, setStats] = useState<DentistStats>({
     todayAppointments: 0,
     pendingCount: 0,
     completedToday: 0
   });
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [patientsLoading, setPatientsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [editingAppointment, setEditingAppointment] = useState<string | null>(null);
-  const [appointmentNotes, setAppointmentNotes] = useState<{ [key: string]: string }>({});
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
   const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
+      
       const token = localStorage.getItem('auth-token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
 
+      // Build query parameters
       const params = new URLSearchParams();
-      if (selectedDate) params.append('date', selectedDate);
+      if (selectedDate) {
+        params.append('date', selectedDate);
+      }
+
+      // Add sorting parameters
+      params.append('sort', 'startsAt');
+      params.append('order', 'asc');
 
       const response = await fetch(`/api/dentist/appointments?${params.toString()}`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch appointments');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch appointments');
       }
 
       const data = await response.json();
-      setAppointments(data.appointments || []);
+      
+      // Sort appointments by date and time
+      const sortedAppointments = (data.appointments || []).sort((a: Appointment, b: Appointment) => {
+        return new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime();
+      });
+
+      setAppointments(sortedAppointments);
       setStats(data.stats || { todayAppointments: 0, pendingCount: 0, completedToday: 0 });
 
       // Initialize notes state
       const notesMap: { [key: string]: string } = {};
-      data.appointments?.forEach((apt: Appointment) => {
+      sortedAppointments.forEach((apt: Appointment) => {
         notesMap[apt._id] = apt.notes || '';
       });
       setAppointmentNotes(notesMap);
 
     } catch (err) {
       console.error('Error fetching appointments:', err);
-      setError('Failed to load appointments. Using mock data for development.');
-      // Mock data for development
-      const mockAppointments = [
-        {
-          _id: '1',
-          userId: {
-            _id: '1',
-            name: 'John Smith',
-            email: 'john@example.com',
-            phone: '+1234567890'
-          },
-          serviceId: {
-            _id: '1',
-            name: 'Dental Cleaning',
-            duration: 60,
-            price: 100,
-            category: 'General'
-          },
-          startsAt: new Date().toISOString(),
-          status: 'CONFIRMED',
-          symptoms: 'Regular checkup',
-          notes: '',
-          price: 100,
-          paymentStatus: 'PAID'
-        },
-        {
-          _id: '2',
-          userId: {
-            _id: '2',
-            name: 'Monsef',
-            email: 'monsef@example.com',
-            phone: '+1234567891'
-          },
-          serviceId: {
-            _id: '2',
-            name: 'Root Canal',
-            duration: 120,
-            price: 800,
-            category: 'Endodontics'
-          },
-          startsAt: '2025-08-15T10:00:00.000Z',
-          status: 'PENDING',
-          symptoms: 'Severe tooth pain, sensitivity to hot and cold',
-          notes: 'Patient reports intense pain in upper right molar',
-          price: 800,
-          paymentStatus: 'PENDING'
-        },
-        {
-          _id: '3',
-          userId: {
-            _id: '3',
-            name: 'Sarah Johnson',
-            email: 'sarah@example.com',
-            phone: '+1234567892'
-          },
-          serviceId: {
-            _id: '3',
-            name: 'Dental Implant',
-            duration: 180,
-            price: 2500,
-            category: 'Surgery'
-          },
-          startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
-          status: 'CONFIRMED',
-          symptoms: 'Missing tooth, wants permanent solution',
-          notes: 'Patient is a good candidate for implant',
-          price: 2500,
-          paymentStatus: 'PAID'
-        }
-      ];
-      setAppointments(mockAppointments);
-      setStats({ 
-        todayAppointments: mockAppointments.filter(apt => {
-          const aptDate = new Date(apt.startsAt).toDateString();
-          const today = new Date().toDateString();
-          return aptDate === today;
-        }).length, 
-        pendingCount: mockAppointments.filter(apt => apt.status === 'PENDING').length, 
-        completedToday: 0 
-      });
+      setError(err instanceof Error ? err.message : 'Failed to load appointments');
+      
+      // Clear appointments on error to avoid showing stale data
+      setAppointments([]);
+      setStats({ todayAppointments: 0, pendingCount: 0, completedToday: 0 });
     } finally {
       setLoading(false);
     }
   }, [selectedDate]);
 
+  // Fetch patient appointments
+  const fetchPatientAppointments = useCallback(async (patientId: string) => {
+    try {
+      setIsAppointmentsLoading(true);
+      const token = localStorage.getItem('auth-token');
+      if (!token) throw new Error('No authentication token found');
+
+      const response = await fetch(`/api/dentist/patients/${patientId}/appointments`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch patient appointments');
+      }
+
+      const data = await response.json();
+      
+      // Transform the appointments for better display
+      const formattedAppointments = data.appointments.map((appt: any) => ({
+        ...appt,
+        serviceName: appt.serviceId?.name || 'Unknown Service',
+        serviceCategory: appt.serviceId?.category || 'General',
+        serviceDuration: appt.serviceId?.duration || 30,
+        servicePrice: appt.serviceId?.price || 0,
+        formattedDate: new Date(appt.startsAt).toLocaleDateString(),
+        formattedTime: new Date(appt.startsAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }));
+      
+      setPatientAppointments(formattedAppointments);
+    } catch (err) {
+      console.error('Error fetching patient appointments:', err);
+      setError('Failed to load patient appointments');
+      setPatientAppointments([]);
+    } finally {
+      setIsAppointmentsLoading(false);
+    }
+  }, []);
+
+  // Handle patient selection
+  const handlePatientSelect = useCallback((patient: Patient) => {
+    setSelectedPatient(patient);
+    fetchPatientAppointments(patient._id);
+  }, [fetchPatientAppointments]);
+
   const fetchPatients = useCallback(async () => {
     try {
       setPatientsLoading(true);
       const token = localStorage.getItem('auth-token');
+      if (!token) throw new Error('No authentication token found');
 
       const response = await fetch('/api/dentist/patients', {
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -231,20 +230,20 @@ export default function DentistDashboard() {
 
       const data = await response.json();
       setPatients(data.patients || []);
-
     } catch (err) {
       console.error('Error fetching patients:', err);
-      // Mock data for development
-      const mockPatients = [
+      setError('Failed to load patients');
+      // Fallback to mock data for demo purposes
+      setPatients([
         {
           _id: '1',
-          name: 'John Smith',
+          name: 'John Doe',
           email: 'john@example.com',
           phone: '+1234567890',
           dateOfBirth: '1985-05-15',
           address: '123 Main St, City, State 12345',
-          emergencyContact: 'Jane Smith - +1234567891',
-          medicalHistory: ['Diabetes', 'High Blood Pressure'],
+          emergencyContact: 'Jane Doe - +1234567891',
+          medicalHistory: ['Hypertension', 'Diabetes'],
           totalVisits: 5,
           lastVisit: '2024-01-15T10:00:00Z',
           nextAppointment: new Date().toISOString(),
@@ -252,12 +251,12 @@ export default function DentistDashboard() {
         },
         {
           _id: '2',
-          name: 'Monsef',
-          email: 'monsef@example.com',
+          name: 'Jane Doe',
+          email: 'jane@example.com',
           phone: '+1234567891',
           dateOfBirth: '1990-03-20',
           address: '456 Oak Ave, City, State 12345',
-          emergencyContact: 'Ahmed Monsef - +1234567892',
+          emergencyContact: 'John Doe - +1234567890',
           medicalHistory: ['Asthma'],
           totalVisits: 2,
           lastVisit: '2024-12-01T14:00:00Z',
@@ -266,31 +265,16 @@ export default function DentistDashboard() {
         },
         {
           _id: '3',
-          name: 'Sarah Johnson',
-          email: 'sarah@example.com',
+          name: 'Bob Smith',
+          email: 'bob@example.com',
           phone: '+1234567892',
           dateOfBirth: '1988-07-10',
           address: '789 Pine St, City, State 12345',
-          emergencyContact: 'Mike Johnson - +1234567893',
+          emergencyContact: 'Alice Smith - +1234567893',
           medicalHistory: [],
           totalVisits: 3,
           lastVisit: '2024-11-20T09:00:00Z',
           nextAppointment: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-          recentAppointments: []
-        }
-      ];
-      setPatients(mockPatients);
-        {
-          _id: '2',
-          name: 'Sarah Johnson',
-          email: 'sarah@example.com',
-          phone: '+1234567892',
-          dateOfBirth: '1990-08-22',
-          address: '456 Oak Ave, City, State 12345',
-          emergencyContact: 'Mike Johnson - +1234567893',
-          medicalHistory: ['None'],
-          totalVisits: 3,
-          lastVisit: '2024-01-10T14:30:00Z',
           recentAppointments: []
         }
       ]);
@@ -299,9 +283,19 @@ export default function DentistDashboard() {
     }
   }, []);
 
-  const updateAppointmentStatus = async (appointmentId: string, status: string) => {
+  const updateAppointmentStatus = async (
+    appointmentId: string, 
+    status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW'
+  ) => {
     try {
+      setError(null);
+      setSuccess(null);
+      
       const token = localStorage.getItem('auth-token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
       const response = await fetch(`/api/dentist/appointments/${appointmentId}`, {
         method: 'PUT',
         headers: {
@@ -311,14 +305,46 @@ export default function DentistDashboard() {
         body: JSON.stringify({ status })
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to update appointment');
+        throw new Error(data.error || 'Failed to update appointment status');
       }
 
-      setSuccess('Appointment status updated successfully');
-      fetchAppointments();
+      // Optimistic UI update
+      setAppointments(prevAppointments =>
+        prevAppointments.map(apt =>
+          apt._id === appointmentId ? { ...apt, status } : apt
+        )
+      );
+
+      // Update stats based on the new status
+      if (status === 'COMPLETED') {
+        setStats(prev => ({
+          ...prev,
+          completedToday: prev.completedToday + 1,
+          pendingCount: prev.pendingCount - 1
+        }));
+      } else if (status === 'PENDING') {
+        setStats(prev => ({
+          ...prev,
+          pendingCount: prev.pendingCount + 1
+        }));
+      }
+
+      setSuccess(`Appointment status updated to ${status.toLowerCase()} successfully`);
+      
+      // Refresh data to ensure consistency
+      setTimeout(() => {
+        fetchAppointments();
+      }, 1000);
+      
     } catch (err) {
-      setError('Failed to update appointment status');
+      console.error('Error updating appointment status:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update appointment status');
+      
+      // Revert optimistic update on error
+      fetchAppointments();
     }
   };
 
@@ -379,7 +405,7 @@ export default function DentistDashboard() {
   }, [fetchAppointments, fetchPatients, subscribeToAppointmentUpdates, subscribeToPatientUpdates, unsubscribe]);
 
   // Redirect non-dentist users
-  if (!hasRole(['DENTIST', 'ADMIN'])) {
+  if (!user || !user.role || (user.role !== 'DENTIST' && user.role !== 'ADMIN')) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center">
         <div className="text-center">
@@ -429,14 +455,6 @@ export default function DentistDashboard() {
                     onChange={(e) => setSelectedDate(e.target.value)}
                     className="px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedDate('2025-08-15')}
-                    className="text-xs"
-                  >
-                    Find Monsef
-                  </Button>
                 </div>
                 <Button className="bg-green-600 hover:bg-green-700" asChild>
                   <Link href="/dentist/availability">
@@ -609,7 +627,9 @@ export default function DentistDashboard() {
                                 <div className="flex items-center justify-end space-x-2 mt-2">
                                   <Select
                                     value={appointment.status}
-                                    onValueChange={(status) => updateAppointmentStatus(appointment._id, status)}
+                                    onValueChange={(status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW') => 
+                                      updateAppointmentStatus(appointment._id, status)
+                                    }
                                   >
                                     <SelectTrigger className="w-32">
                                       <SelectValue />
@@ -723,7 +743,11 @@ export default function DentistDashboard() {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {patients.map((patient) => (
-                          <Card key={patient._id} className="hover:shadow-md transition-shadow">
+                          <Card 
+                            key={patient._id} 
+                            className="hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => handlePatientSelect(patient)}
+                          >
                             <CardContent className="p-6">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center space-x-3">
@@ -737,82 +761,185 @@ export default function DentistDashboard() {
                                 </div>
                                 <Dialog>
                                   <DialogTrigger asChild>
-                                    <Button size="sm" variant="outline">
+                                    <Button 
+                                      size="sm" 
+                                      variant="outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePatientSelect(patient);
+                                      }}
+                                    >
                                       <Eye className="h-4 w-4" />
                                     </Button>
                                   </DialogTrigger>
-                                  <DialogContent className="max-w-2xl">
+                                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                                     <DialogHeader>
-                                      <DialogTitle>Patient Details - {patient.name}</DialogTitle>
+                                      <DialogTitle className="text-2xl">
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
+                                            {patient.name.split(' ').map(n => n[0]).join('')}
+                                          </div>
+                                          <div>
+                                            {patient.name}
+                                            <p className="text-sm font-normal text-muted-foreground">
+                                              {patient.email}
+                                            </p>
+                                          </div>
+                                        </div>
+                                      </DialogTitle>
                                       <DialogDescription>
-                                        Complete patient information and medical history
+                                        Complete patient information and appointment history
                                       </DialogDescription>
                                     </DialogHeader>
                                     <div className="space-y-6">
                                       <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                          <h4 className="font-medium mb-2 flex items-center gap-2">
-                                            <User className="h-4 w-4" />
-                                            Contact Information
+                                          <h4 className="font-medium mb-3 text-lg flex items-center gap-2">
+                                            <User className="h-5 w-5" />
+                                            Personal Information
                                           </h4>
-                                          <div className="space-y-2 text-sm">
-                                            <div className="flex items-center gap-2">
-                                              <Mail className="h-3 w-3" />
-                                              {patient.email}
-                                            </div>
+                                          <div className="space-y-3 pl-7">
+                                            {patient.dateOfBirth && (
+                                              <div>
+                                                <p className="text-sm font-medium text-slate-500">Date of Birth</p>
+                                                <p className="text-sm">
+                                                  {new Date(patient.dateOfBirth).toLocaleDateString()} 
+                                                  <span className="text-slate-500 ml-2">
+                                                    ({Math.floor((new Date().getTime() - new Date(patient.dateOfBirth).getTime()) / (1000 * 60 * 60 * 24 * 365.25))} years)
+                                                  </span>
+                                                </p>
+                                              </div>
+                                            )}
                                             {patient.phone && (
-                                              <div className="flex items-center gap-2">
-                                                <Phone className="h-3 w-3" />
-                                                {patient.phone}
+                                              <div>
+                                                <p className="text-sm font-medium text-slate-500">Phone</p>
+                                                <p className="text-sm">{patient.phone}</p>
                                               </div>
                                             )}
                                             {patient.address && (
-                                              <div className="flex items-center gap-2">
-                                                <MapPin className="h-3 w-3" />
-                                                {patient.address}
+                                              <div>
+                                                <p className="text-sm font-medium text-slate-500">Address</p>
+                                                <p className="text-sm">{patient.address}</p>
+                                              </div>
+                                            )}
+                                            {patient.emergencyContact && (
+                                              <div>
+                                                <p className="text-sm font-medium text-slate-500">Emergency Contact</p>
+                                                <p className="text-sm">{patient.emergencyContact}</p>
                                               </div>
                                             )}
                                           </div>
                                         </div>
-                                        <div>
-                                          <h4 className="font-medium mb-2 flex items-center gap-2">
-                                            <Activity className="h-4 w-4" />
-                                            Visit Summary
-                                          </h4>
-                                          <div className="space-y-2 text-sm">
-                                            <p><span className="font-medium">Total Visits:</span> {patient.totalVisits}</p>
-                                            {patient.lastVisit && (
-                                              <p><span className="font-medium">Last Visit:</span> {new Date(patient.lastVisit).toLocaleDateString()}</p>
-                                            )}
-                                            {patient.nextAppointment && (
-                                              <p><span className="font-medium">Next Visit:</span> {new Date(patient.nextAppointment).toLocaleDateString()}</p>
-                                            )}
+
+                                        {patient.medicalHistory && patient.medicalHistory.length > 0 && (
+                                          <div>
+                                            <h4 className="font-medium mb-3 text-lg flex items-center gap-2">
+                                              <Heart className="h-5 w-5" />
+                                              Medical History
+                                            </h4>
+                                            <div className="flex flex-wrap gap-2 pl-7">
+                                              {patient.medicalHistory.map((condition, index) => (
+                                                <Badge key={index} variant="outline" className="text-sm">
+                                                  {condition}
+                                                </Badge>
+                                              ))}
+                                            </div>
                                           </div>
-                                        </div>
+                                        )}
                                       </div>
 
-                                      {patient.medicalHistory && patient.medicalHistory.length > 0 && (
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                                         <div>
-                                          <h4 className="font-medium mb-2 flex items-center gap-2">
-                                            <Heart className="h-4 w-4" />
-                                            Medical History
+                                          <h4 className="font-medium mb-3 text-lg flex items-center gap-2">
+                                            <Activity className="h-5 w-5" />
+                                            Visit Summary
                                           </h4>
-                                          <div className="flex flex-wrap gap-2">
-                                            {patient.medicalHistory.map((condition, index) => (
-                                              <Badge key={index} variant="outline">
-                                                {condition}
-                                              </Badge>
-                                            ))}
+                                          <div className="space-y-3 pl-7">
+                                            <p><span className="text-sm font-medium">Total Visits:</span> {patient.totalVisits}</p>
+                                            {patient.lastVisit && (
+                                              <p><span className="text-sm font-medium">Last Visit:</span> {new Date(patient.lastVisit).toLocaleDateString()}</p>
+                                            )}
+                                            {patient.nextAppointment && (
+                                              <p><span className="text-sm font-medium">Next Visit:</span> {new Date(patient.nextAppointment).toLocaleDateString()}</p>
+                                            )}
                                           </div>
                                         </div>
-                                      )}
 
-                                      {patient.emergencyContact && (
                                         <div>
-                                          <h4 className="font-medium mb-2">Emergency Contact</h4>
-                                          <p className="text-sm text-slate-600">{patient.emergencyContact}</p>
+                                          <h4 className="font-medium mb-3 text-lg flex items-center gap-2">
+                                            <Calendar className="h-5 w-5" />
+                                            Appointment History
+                                          </h4>
+                                          
+                                          {isAppointmentsLoading ? (
+                                            <div className="flex justify-center py-8">
+                                              <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin"></div>
+                                            </div>
+                                          ) : patientAppointments.length === 0 ? (
+                                            <div className="text-center py-8 text-slate-500">
+                                              <p>No appointment history found</p>
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                                              {patientAppointments.map((appointment) => (
+                                                <div key={appointment._id} className="border rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                                                  <div className="flex justify-between items-start">
+                                                    <div>
+                                                      <p className="font-medium">{appointment.serviceName}</p>
+                                                      <p className="text-sm text-slate-500">{appointment.serviceCategory}</p>
+                                                    </div>
+                                                    <Badge 
+                                                      variant={
+                                                        appointment.status === 'COMPLETED' ? 'default' : 
+                                                        appointment.status === 'CANCELLED' ? 'destructive' :
+                                                        'outline'
+                                                      }
+                                                      className="text-xs"
+                                                    >
+                                                      {appointment.status.replace('_', ' ')}
+                                                    </Badge>
+                                                  </div>
+                                                  <div className="mt-2 flex items-center justify-between text-sm">
+                                                    <div className="flex items-center gap-2 text-slate-600">
+                                                      <Calendar className="h-3.5 w-3.5" />
+                                                      <span>{appointment.formattedDate}</span>
+                                                      <Clock className="h-3.5 w-3.5 ml-2" />
+                                                      <span>{appointment.formattedTime}</span>
+                                                    </div>
+                                                    <span className="font-medium">${appointment.servicePrice}</span>
+                                                  </div>
+                                                  {appointment.notes && (
+                                                    <div className="mt-2 text-sm text-slate-600 bg-slate-50 p-2 rounded">
+                                                      <p className="font-medium">Notes:</p>
+                                                      <p className="whitespace-pre-wrap">{appointment.notes}</p>
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
                                         </div>
-                                      )}
+                                      </div>
+                                      
+                                      <DialogFooter className="mt-6">
+                                        <Button variant="outline" onClick={() => {
+                                          // Here you can implement a function to create a new appointment for this patient
+                                          console.log('Create new appointment for:', patient._id);
+                                        }}>
+                                          <Plus className="h-4 w-4 mr-2" />
+                                          New Appointment
+                                        </Button>
+                                        <Button 
+                                          variant="default" 
+                                          onClick={() => {
+                                            // Here you can implement navigation to a more detailed patient view
+                                            console.log('View full profile:', patient._id);
+                                          }}
+                                        >
+                                          <FileText className="h-4 w-4 mr-2" />
+                                          View Full Profile
+                                        </Button>
+                                      </DialogFooter>
                                     </div>
                                   </DialogContent>
                                 </Dialog>
