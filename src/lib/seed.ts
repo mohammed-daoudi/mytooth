@@ -112,21 +112,21 @@ const defaultUsers = [
     name: 'Dr. Sarah Johnson',
     email: 'admin@mytooth.com',
     password: 'admin123456',
-    role: 'admin',
+    role: 'ADMIN',
     phone: '+1-555-123-0001',
   },
   {
     name: 'Dr. Michael Chen',
     email: 'dentist@mytooth.com',
     password: 'dentist123456',
-    role: 'dentist',
+    role: 'DENTIST',
     phone: '+1-555-123-0002',
   },
   {
     name: 'John Patient',
     email: 'patient@example.com',
     password: 'patient123456',
-    role: 'patient',
+    role: 'USER',
     phone: '+1-555-123-0003',
     dateOfBirth: new Date('1990-01-15'),
     address: '123 Main Street, Health City, HC 12345',
@@ -155,14 +155,18 @@ const defaultDentists = [
   }
 ];
 
-export async function seedDatabase() {
+export async function seedDatabase(reset = false) {
   try {
     await connectDB();
     console.log('Connected to database...');
 
-    // Clear existing data (optional - be careful in production)
-    // await User.deleteMany({});
-    // await Service.deleteMany({});
+    // Clear existing data if reset is true
+    if (reset) {
+      console.log('Resetting users and dentists...');
+      await User.deleteMany({});
+      await Dentist.deleteMany({});
+      console.log('Cleared existing users and dentists');
+    }
 
     // Seed services
     console.log('Seeding services...');

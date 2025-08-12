@@ -156,11 +156,94 @@ export default function DentistDashboard() {
 
     } catch (err) {
       console.error('Error fetching appointments:', err);
+<<<<<<< HEAD
       setError(err instanceof Error ? err.message : 'Failed to load appointments');
       
       // Clear appointments on error to avoid showing stale data
       setAppointments([]);
       setStats({ todayAppointments: 0, pendingCount: 0, completedToday: 0 });
+=======
+      setError('Failed to load appointments. Using mock data for development.');
+      // Mock data for development
+      const mockAppointments = [
+        {
+          _id: '1',
+          userId: {
+            _id: '1',
+            name: 'John Smith',
+            email: 'john@example.com',
+            phone: '+1234567890'
+          },
+          serviceId: {
+            _id: '1',
+            name: 'Dental Cleaning',
+            duration: 60,
+            price: 100,
+            category: 'General'
+          },
+          startsAt: new Date().toISOString(),
+          status: 'CONFIRMED' as const,
+          symptoms: 'Regular checkup',
+          notes: '',
+          price: 100,
+          paymentStatus: 'PAID'
+        },
+        {
+          _id: '2',
+          userId: {
+            _id: '2',
+            name: 'Monsef',
+            email: 'monsef@example.com',
+            phone: '+1234567891'
+          },
+          serviceId: {
+            _id: '2',
+            name: 'Root Canal',
+            duration: 120,
+            price: 800,
+            category: 'Endodontics'
+          },
+          startsAt: '2025-08-15T10:00:00.000Z',
+          status: 'PENDING' as const,
+          symptoms: 'Severe tooth pain, sensitivity to hot and cold',
+          notes: 'Patient reports intense pain in upper right molar',
+          price: 800,
+          paymentStatus: 'PENDING'
+        },
+        {
+          _id: '3',
+          userId: {
+            _id: '3',
+            name: 'Sarah Johnson',
+            email: 'sarah@example.com',
+            phone: '+1234567892'
+          },
+          serviceId: {
+            _id: '3',
+            name: 'Dental Implant',
+            duration: 180,
+            price: 2500,
+            category: 'Surgery'
+          },
+          startsAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+          status: 'CONFIRMED' as const,
+          symptoms: 'Missing tooth, wants permanent solution',
+          notes: 'Patient is a good candidate for implant',
+          price: 2500,
+          paymentStatus: 'PAID'
+        }
+      ];
+      setAppointments(mockAppointments);
+      setStats({
+        todayAppointments: mockAppointments.filter(apt => {
+          const aptDate = new Date(apt.startsAt).toDateString();
+          const today = new Date().toDateString();
+          return aptDate === today;
+        }).length,
+        pendingCount: mockAppointments.filter(apt => apt.status === 'PENDING').length,
+        completedToday: 0
+      });
+>>>>>>> b36e65c0e312fcbebc058c7d85ab696a74b3fd1e
     } finally {
       setLoading(false);
     }
@@ -277,7 +360,12 @@ export default function DentistDashboard() {
           nextAppointment: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           recentAppointments: []
         }
+<<<<<<< HEAD
       ]);
+=======
+      ];
+      setPatients(mockPatients);
+>>>>>>> b36e65c0e312fcbebc058c7d85ab696a74b3fd1e
     } finally {
       setPatientsLoading(false);
     }

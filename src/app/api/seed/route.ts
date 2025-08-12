@@ -11,7 +11,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = await seedDatabase();
+    const body = await req.json().catch(() => ({}));
+    const reset = body.reset === true;
+
+    const result = await seedDatabase(reset);
 
     if (result.success) {
       return NextResponse.json({
